@@ -6,4 +6,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+	<ItemGroup>
+		<!--You need to change this to the correct location of the database connector-->
+		<!--TODO - Change this to a package reference after DatabaseConnector has been finished-->
+		<ProjectReference Include="D:\2025\Coding\DatabaseConnector\DatabaseConnector\DatabaseConnector.csproj"/>
+	</ItemGroup>
+
 </Project>
