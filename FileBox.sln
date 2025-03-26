@@ -5,6 +5,8 @@ VisualStudioVersion = 17.12.35527.113 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileBox", "FileBox\FileBox.csproj", "{E63E24DB-71C0-4DCA-B0D5-282A2CD77112}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Filebox.Shared", "FileBox.Shared\Filebox.Shared.csproj", "{D50554D9-BD86-4BEA-AFE2-EA6CEFF8728C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{E63E24DB-71C0-4DCA-B0D5-282A2CD77112}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E63E24DB-71C0-4DCA-B0D5-282A2CD77112}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E63E24DB-71C0-4DCA-B0D5-282A2CD77112}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D50554D9-BD86-4BEA-AFE2-EA6CEFF8728C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D50554D9-BD86-4BEA-AFE2-EA6CEFF8728C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D50554D9-BD86-4BEA-AFE2-EA6CEFF8728C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D50554D9-BD86-4BEA-AFE2-EA6CEFF8728C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
