@@ -1,8 +1,9 @@
-﻿using FileBox.Shared.Models;
-using DatabaseConnector.Services;
+﻿using DatabaseConnector.Services;
 using DatabaseConnector.Models;
 using FileBox.ConfigModels;
 using System.Text.Json;
+using FileBox.Shared.Models;
+using System.Reflection;
 
 
 StartUp();
@@ -25,7 +26,11 @@ static void StartUp()
 
 		DatabaseConnector = new DatabaseConnector.Services.DatabaseConnector(DatabaseType.Sqlite, $"Data Source={SqliteLocation}\\FileBoxDatabase.db");
 
-		//TODO - Create tables if they don't already exist
+		//Gets tables config
+		List<Table> Tables = GetDatabaseTables();
+
+		//Creates tables if they don't already exist
+		CreateTables(DatabaseConnector, Tables);
 	}
 
 	else //Creates databases that are not local files (MySql, SqlServer, etc)
@@ -44,7 +49,7 @@ static void StartUp()
 
 	//From this point the DataBase connection is setup
 
-	List<FileBoxFile> files = DatabaseConnector.Select<FileBoxFile>(new Select());
+	List<Tag> files = DatabaseConnector.Select<Tag>(new Select());
 
 	Console.WriteLine(files.Count());
 
@@ -68,9 +73,16 @@ static string? GetConnectionString()
 
 	return appSettings.DatabaseSettings.ConnectionString;
 }
+
+static List<Table> GetDatabaseTables()
+{
+	string text = File.ReadAllText("tablesconfig.json");
+	return JsonSerializer.Deserialize<List<Table>>(text);
+}
+
 #endregion
 
-#region Sqlite Database Settings
+#region Sqlite Database
 static string GetSqliteDatabaseLocation()
 {
 	string text = File.ReadAllText("filelocationsettings.json");
@@ -91,4 +103,41 @@ static string GetSqliteDatabaseLocation()
 
 
 }
+
+static void CreateTables(DatabaseConnector.Services.IDatabaseConnector Connection, List<Table> Tables)
+{
+	foreach (Table table in Tables)
+	{
+		Type? type = Type.GetType($"FileBox.Shared.Models.{table.CreatorClass}, Filebox.Shared", false);
+
+		if (type is null)
+		{
+			Console.WriteLine($"Error trying to load creator class {table.CreatorClass} for table {table.Name}!");
+			continue;
+		}
+
+		//Checks if the table is already created
+		try
+		{
+			// Get the method from IDatabaseConnector, name and parameter(Wouldn't get it without this)
+			MethodInfo method = typeof(IDatabaseConnector).GetMethod("Select", new Type[] { typeof(Select) })!;
+
+			// Make the method generic with the specific type of the creator class
+			MethodInfo genericMethod = method.MakeGenericMethod(type);
+
+			// Invoke the generic method with using Connection as its base
+			//Not the best due to getting all the data in the table for no reason
+			object result = genericMethod.Invoke(Connection, new object[] { new Select() })!;
+
+		}
+		catch
+		{
+			//Creates the table in the database
+			MethodInfo method = typeof(IDatabaseConnector).GetMethod("CreateTable")!;
+			MethodInfo genericMethod = method.MakeGenericMethod(type);
+			genericMethod.Invoke(Connection, new object[] { });
+		}
+	}
+}
+
 #endregion

@@ -1,0 +1,26 @@
+﻿[
+	{
+		"Name": "tblFile",
+		"CreatorClass": "FileBoxFile"
+	},
+	{
+		"Name": "tblTag",
+		"CreatorClass": "Tag"
+	},
+	{
+		"Name": "tblPath",
+		"CreatorClass": "Path"
+	},
+	{
+		"Name": "tblBaseFileInfo",
+		"CreatorClass": "BaseFileInfo"
+	},
+	{
+		"Name": "tblInfoValue",
+		"CreatorClass": "InfoValue"
+	},
+	{
+		"Name": "tblFileTag",
+		"CreatorClass": "FileTag"
+	}
+]
