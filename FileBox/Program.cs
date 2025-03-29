@@ -9,7 +9,7 @@ using System.Reflection;
 StartUp();
 
 
-static void StartUp()
+static IDatabaseConnector StartUp()
 {
 
 	Console.WriteLine("Starting FileBox!");
@@ -46,6 +46,7 @@ static void StartUp()
 
 	}
 
+	Console.WriteLine("FileBox Started!");
 
 	//From this point the DataBase connection is setup
 
@@ -53,6 +54,7 @@ static void StartUp()
 
 	Console.WriteLine(files.Count());
 
+	return DatabaseConnector;
 }
 
 #region App Settings

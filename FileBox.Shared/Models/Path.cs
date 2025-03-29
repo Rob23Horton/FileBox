@@ -12,10 +12,10 @@ namespace FileBox.Shared.Models
 	{
 		[NameCast("PathId")]
 		[PropertyType("INTEGER", true)]
-		public int Id { get; set; }
+		public Int64 Id { get; set; }
 
 		[PropertyType("INTEGER")]
-		public int FileCode { get; set; }
+		public Int64 FileCode { get; set; }
 
 		[PropertyType("VARCHAR(48)")]
 		public string DeviceName { get; set; }
@@ -24,6 +24,6 @@ namespace FileBox.Shared.Models
 		public string FilePath { get; set; }
 
 		[PropertyType("INTEGER")]
-		public int SortOrder { get; set; }
+		public Int64 SortOrder { get; set; }
 	}
 }

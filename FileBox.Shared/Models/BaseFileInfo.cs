@@ -7,13 +7,13 @@ namespace FileBox.Shared.Models
 	{
 		[NameCast("BaseFileInfoId")]
 		[PropertyType("INTEGER", true)]
-		public int Id { get; set; }
+		public Int64 Id { get; set; }
 
 		[PropertyType("INTEGER")]
-		public int FileCode { get; set; }
+		public Int64 FileCode { get; set; }
 
 		[PropertyType("INTEGER")]
-		public int Size { get; set; }
+		public Int64 Size { get; set; }
 		public DateTime LastModified { get; set; }
 	}
 }
