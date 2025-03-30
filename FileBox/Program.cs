@@ -4,6 +4,9 @@ using FileBox.ConfigModels;
 using System.Text.Json;
 using FileBox.Shared.Models;
 using System.Reflection;
+using FileBox.Interfaces;
+using FileBox.Repositories;
+using System.Net.Http.Headers;
 
 
 StartUp();
@@ -50,9 +53,7 @@ static IDatabaseConnector StartUp()
 
 	//From this point the DataBase connection is setup
 
-	List<Tag> files = DatabaseConnector.Select<Tag>(new Select());
-
-	Console.WriteLine(files.Count());
+	ITagRepository tagRepository = new TagRepository(DatabaseConnector);
 
 	return DatabaseConnector;
 }
