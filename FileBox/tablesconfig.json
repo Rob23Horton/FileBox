@@ -12,10 +12,6 @@
 		"CreatorClass": "FileBoxPath"
 	},
 	{
-		"Name": "tblBaseFileInfo",
-		"CreatorClass": "BaseFileInfo"
-	},
-	{
 		"Name": "tblInfoValue",
 		"CreatorClass": "InfoValue"
 	},
