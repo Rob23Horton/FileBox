@@ -16,6 +16,5 @@ namespace FileBox.Shared.Models
 		public Int64 TagCode {  get; set; }
 
 		public bool CurrentlyActive { get; set; }
-
 	}
 }
