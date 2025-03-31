@@ -9,7 +9,7 @@
 	},
 	{
 		"Name": "tblPath",
-		"CreatorClass": "Path"
+		"CreatorClass": "FileBoxPath"
 	},
 	{
 		"Name": "tblBaseFileInfo",

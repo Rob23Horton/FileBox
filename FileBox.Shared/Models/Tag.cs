@@ -12,7 +12,7 @@ namespace FileBox.Shared.Models
 	{
 		[NameCast("TagId")]
 		[PropertyType("INTEGER", true)]
-		public Int64 Id { get; set; }
+		public long Id { get; set; }
 		[PropertyType("VARCHAR(48)")]
 		public string Name { get; set; }
 	}

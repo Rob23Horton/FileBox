@@ -9,11 +9,11 @@ namespace FileBox.Interfaces
 {
 	public interface IPathRepository
 	{
-		Public Path GetPathById(int Id);
-		Public List<Path> GetAllPathsFromFileCode(int FileCode);
-		Public void ChangeCurrentAciveFilePath(int FileCode, int PathId);
-		Public void AddPath(Path Path);
-		Public void EditPath(Path Path);
-		Public void RemovePath(int Id);
+		public FileBoxPath GetPathById(int Id);
+		public List<FileBoxPath> GetAllPathsFromFileCode(int FileCode);
+		public void ChangeCurrentActiveFilePath(int FileCode, int PathId);
+		public void AddPath(FileBoxPath Path);
+		public void EditPath(FileBoxPath Path);
+		public void RemovePath(int Id);
 	}
 }

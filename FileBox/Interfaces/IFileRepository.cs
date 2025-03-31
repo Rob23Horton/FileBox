@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FileBox.Interfaces
 {
-	public interface IPathRepository
+	public interface IFileRepository
 	{
 		public FileBoxFile GetFileById(int Id);
 		public List<FileBoxFile> GetAllFiles();

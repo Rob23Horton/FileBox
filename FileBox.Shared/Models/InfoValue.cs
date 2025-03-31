@@ -7,10 +7,10 @@ namespace FileBox.Shared.Models
 	{
 		[NameCast("InfoValueId")]
 		[PropertyType("INTEGER", true)]
-		public Int64 Id { get; set; }
+		public long Id { get; set; }
 
 		[PropertyType("INTEGER")]
-		public Int64 FileCode { get; set; }
+		public long FileCode { get; set; }
 
 		[PropertyType("VARCHAR(24)")]
 		public string ValueName { get; set; }

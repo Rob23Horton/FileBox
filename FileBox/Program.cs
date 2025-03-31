@@ -8,8 +8,12 @@ using FileBox.Interfaces;
 using FileBox.Repositories;
 using System.Net.Http.Headers;
 
+//Testing
+IDatabaseConnector _databaseConnector = StartUp();
 
-StartUp();
+ITagRepository tagRepository = new TagRepository(_databaseConnector);
+IPathRepository pathRepository = new PathRepository(_databaseConnector);
+IFileRepository fileRepository = new FileRepository(_databaseConnector);
 
 
 static IDatabaseConnector StartUp()
@@ -52,8 +56,6 @@ static IDatabaseConnector StartUp()
 	Console.WriteLine("FileBox Started!");
 
 	//From this point the DataBase connection is setup
-
-	ITagRepository tagRepository = new TagRepository(DatabaseConnector);
 
 	return DatabaseConnector;
 }

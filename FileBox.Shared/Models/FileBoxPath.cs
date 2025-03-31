@@ -8,14 +8,14 @@ using DatabaseConnector.Attributes;
 namespace FileBox.Shared.Models
 {
 	[Table("tblPath")]
-	public class Path
+	public class FileBoxPath
 	{
 		[NameCast("PathId")]
 		[PropertyType("INTEGER", true)]
-		public Int64 Id { get; set; }
+		public long Id { get; set; }
 
 		[PropertyType("INTEGER")]
-		public Int64 FileCode { get; set; }
+		public long FileCode { get; set; }
 
 		[PropertyType("VARCHAR(48)")]
 		public string DeviceName { get; set; }

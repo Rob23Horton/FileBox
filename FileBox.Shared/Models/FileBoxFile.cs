@@ -7,7 +7,7 @@ namespace FileBox.Shared.Models
 	{
 		[NameCast("FileId")]
 		[PropertyType("INTEGER", true)]
-		public Int64 Id { get; set; }
+		public long Id { get; set; }
 
 		[PropertyType("TEXT")]
 		public string Name { get; set; }

@@ -30,7 +30,7 @@ namespace FileBox.Repositories
 
 		public void EditTag(Tag tag)
 		{
-			_databaseConnector.Update<Tag>(tag, new Select());
+			_databaseConnector.Update<Tag>(tag, new Update());
 		}
 
 		public List<Tag> GetAllTags()

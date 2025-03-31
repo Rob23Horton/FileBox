@@ -18,63 +18,65 @@ namespace FileBox.Repositories
 			this._databaseConnector = _databaseConnector;
 		}
 
-		Public Path GetPathById(int Id)
+		public FileBoxPath GetPathById(int Id)
 		{
 			Select select = new Select();
 			select.AddWhere("PathId", Id);
 
-			List<Path> paths = _databaseConnector.Select<Path>(select);
+			List<FileBoxPath> paths = _databaseConnector.Select<FileBoxPath>(select);
 
 			if (paths.Count() == 0)
 			{
-				return new Path();
+				return new FileBoxPath();
 			}
 
 			return paths[0];
 		}
 
-		Public List<Path> GetAllPathsFromFileCode(int FileCode)
+		public List<FileBoxPath> GetAllPathsFromFileCode(int FileCode)
 		{
 			Select select = new Select();
 			select.AddWhere("FileCode", FileCode);
 
-			return _databaseConnector.Select<Path>(select);
+			return _databaseConnector.Select<FileBoxPath>(select);
 		}
 
-		Public void ChangeCurrentAciveFilePath(int FileCode, int PathId)
+		public void ChangeCurrentActiveFilePath(int FileCode, int PathId)
 		{
-			Select update = new Select();
+			Update update = new Update();
 			update.AddWhere("FileCode", FileCode);
 
-			Path plainPath = new Path();
+			FileBoxPath plainPath = new FileBoxPath();
+			plainPath.FileCode = FileCode;
 			plainPath.CurrentlyActive = false;
 
 			//Sets all paths to unactive
-			_databaseConnector.Update<Path>(plainPath, update);
+			_databaseConnector.Update<FileBoxPath>(plainPath, update);
 
 
 			update.AddWhere("PathId", PathId);
 			
-			Path activePath = new Path();
+			FileBoxPath activePath = new FileBoxPath();
+			activePath.FileCode = FileCode;
 			activePath.CurrentlyActive = true;
 
 			//Sets the correct path to active
-			_databaseConnector.Update<Path>(activePath, update);
+			_databaseConnector.Update<FileBoxPath>(activePath, update);
 		}
 
-		Public void AddPath(Path Path)
+		public void AddPath(FileBoxPath FileBoxPath)
 		{
-			_databaseConnector.Insert<Path>(Path);
+			_databaseConnector.Insert<FileBoxPath>(FileBoxPath);
 		}
 
-		Public void EditPath(Path Path)
+		public void EditPath(FileBoxPath Path)
 		{
-			_databaseConnector.Update<Path>(Path, new Select());
+			_databaseConnector.Update<FileBoxPath>(Path, new Update());
 		}
 
-		Public void RemovePath(int Id)
+		public void RemovePath(int Id)
 		{
-			_databaseConnector.Delete<Path>(new Path { Id = Id });
+			_databaseConnector.Delete<FileBoxPath>(new FileBoxPath { Id = Id });
 		}
 	}
 }

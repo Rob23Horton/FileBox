@@ -43,7 +43,7 @@ namespace FileBox.Repositories
 			Select select = new Select();
 			select.AddWhere("", "Name", Name, true);
 
-			return _databaseConnector.Select<Path>(select);
+			return _databaseConnector.Select<FileBoxFile>(select);
 		}
 
 		public void AddFile(FileBoxFile File)
@@ -53,12 +53,12 @@ namespace FileBox.Repositories
 
 		public void EditFile(FileBoxFile File)
 		{
-			_databaseConnector.Update<FileBoxFile(File, new Select());
+			_databaseConnector.Update<FileBoxFile>(File, new Update());
 		}
 
 		public void DeleteFile(int Id)
 		{
-			_databaseConnector.Delete<FileBoxFile(new FileBoxFile() {Id = Id});
+			_databaseConnector.Delete<FileBoxFile>(new FileBoxFile() {Id = Id});
 		}
 
 		public List<FileTag> GetTagsForFile(int FileId)
@@ -74,13 +74,26 @@ namespace FileBox.Repositories
 			FileTag newTag = new FileTag();
 			newTag.FileCode = FileId;
 			newTag.TagCode = TagCode;
+			newTag.CurrentlyActive = true;
 
 			_databaseConnector.Insert<FileTag>(newTag);
 		}
 
 		public void RemoveTagForFile(int FileId, int TagCode)
 		{
-			_databaseConnector.Delete<FileTag>(new FileTag() { FileCode = FileId, TagCode = TagCode});
+			Select select = new Select();
+			select.AddWhere("FileCode", FileId);
+			select.AddWhere("TagCode", TagCode);
+
+			List<FileTag> fileTags = _databaseConnector.Select<FileTag>(select);
+
+			if (fileTags.Count() == 0)
+			{
+				throw new Exception($"File {FileId} doesn't have tag {TagCode}");
+			}
+
+			//Delete the tag
+			_databaseConnector.Delete<FileTag>(fileTags[0]);
 		}
 	}
 }

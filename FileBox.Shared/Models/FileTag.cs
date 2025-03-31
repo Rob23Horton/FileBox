@@ -7,13 +7,13 @@ namespace FileBox.Shared.Models
 	{
 		[NameCast("FileTagId")]
 		[PropertyType("INTEGER", true)]
-		public Int64 Id { get; set; }
+		public long Id { get; set; }
 
 		[PropertyType("INTEGER")]
-		public Int64 FileCode { get; set; }
+		public long FileCode { get; set; }
 
 		[PropertyType("INTEGER")]
-		public Int64 TagCode {  get; set; }
+		public long TagCode {  get; set; }
 
 		public bool CurrentlyActive { get; set; }
 	}
