@@ -23,7 +23,6 @@ namespace FileBox.Shared.Models
 		[PropertyType("TEXT")]
 		public string FilePath { get; set; }
 
-		[PropertyType("INTEGER")]
-		public Int64 SortOrder { get; set; }
+		public bool CurrentlyActive { get; set; }
 	}
 }
