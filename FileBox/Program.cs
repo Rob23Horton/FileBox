@@ -2,11 +2,9 @@
 using DatabaseConnector.Models;
 using FileBox.ConfigModels;
 using System.Text.Json;
-using FileBox.Shared.Models;
 using System.Reflection;
 using FileBox.Interfaces;
 using FileBox.Repositories;
-using System.Net.Http.Headers;
 
 //Testing
 IDatabaseConnector _databaseConnector = StartUp();
