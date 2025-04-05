@@ -6,15 +6,6 @@ using System.Reflection;
 using FileBox.Interfaces;
 using FileBox.Repositories;
 
-//Testing
-IDatabaseConnector _databaseConnector = StartUp();
-
-ITagRepository tagRepository = new TagRepository(_databaseConnector);
-IPathRepository pathRepository = new PathRepository(_databaseConnector);
-IFileRepository fileRepository = new FileRepository(_databaseConnector);
-IFileInformationRepository fileInfoRepository = new FileInformationRepository(_databaseConnector);
-
-
 static IDatabaseConnector StartUp()
 {
 
