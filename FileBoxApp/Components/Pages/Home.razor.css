@@ -1,0 +1,24 @@
+﻿
+.search-container {
+	position: sticky;
+	top: 5px;
+	background-color: white;
+
+	padding: 10px;
+}
+
+.recent-table {
+	width: 100%;
+}
+
+.recent-name-item {
+	width: 20%;
+}
+
+.recent-tags-item {
+	width: 60%;
+}
+
+.recent-accessed-item {
+	width: 20%;
+}

@@ -1,5 +1,91 @@
 ﻿@page "/"
+<PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+@inject IRecentFilesRepository _RecentFileService;
 
-Welcome to your new app.
+<div class="search-container">
+	<InputText class="form-control search-box" placeholder="Search" @bind-value="@SearchValue" @bind-value:after="Search"/>
+</div>
+
+<p>@SearchValue</p>
+
+@if (ShowRecentFiles)
+{
+	<div class="flex-column recent-container">
+		<h2>Recent Files</h2>
+		<hr />
+		@if (RecentFiles.Count() == 0)
+		{
+			<p>No Recent Files Found</p>
+		}
+		else
+		{
+			<table class="w-100 recent-table">
+				<tr>
+					<th>Name</th>
+					<th>Tags</th>
+					<th>Last Accessed</th>
+				</tr>
+
+				@foreach (RecentFile recentFile in RecentFiles.OrderByDescending(r => r.Accessed))
+				{
+					<tr class="flex-row">
+						<td class="recent-name-item">@recentFile.Name</td>
+						<td class="recent-tags-item">None</td> @* TODO - Do logic for showning all the tags *@
+						<td class="recent-accessed-item">
+							@if (recentFile.Accessed.Date == DateTime.Now.Date)
+							{
+								@recentFile.Accessed.ToShortTimeString()
+							}
+							else
+							{
+								@recentFile.Accessed.ToShortDateString() @((MarkupString)" - ") @recentFile.Accessed.ToShortTimeString()
+
+							}
+						</td>
+					</tr>
+				}
+			</table>
+		}
+
+	</div>
+}
+
+@code
+{
+	private string SearchValue { get; set; } = String.Empty;
+
+
+	private bool ShowRecentFiles = true;
+	private List<RecentFile> RecentFiles { get; set; } = new List<RecentFile>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			RecentFiles = await _RecentFileService.GetRecentFiles();
+			StateHasChanged();
+		}
+		catch
+		{
+
+		}
+
+		base.OnInitialized();
+	}
+
+	private void Search()
+	{
+		Console.WriteLine("Searching");
+
+		if (String.IsNullOrWhiteSpace(SearchValue))
+		{
+			ShowRecentFiles = true;
+			return;            
+		}
+
+		ShowRecentFiles = false;
+
+	}
+
+}

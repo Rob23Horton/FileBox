@@ -2,6 +2,10 @@
 using SQLitePCL;
 using Microsoft.Extensions.Logging;
 
+using Blazored.LocalStorage;
+using FileBoxApp.Services;
+
+
 namespace FileBoxApp
 {
 	public static class MauiProgram
@@ -25,6 +29,12 @@ namespace FileBoxApp
 
 			//Adds database connector using FileBox.StartUp
 			builder.Services.AddSingleton<IDatabaseConnector>(FileBox.FileBox.StartUp());
+
+			//Adds local storage service
+			builder.Services.AddBlazoredLocalStorage();
+
+			//Custom Services
+			builder.Services.AddScoped<IRecentFilesRepository, RecentFileRepository>();
 
 #if DEBUG
 			builder.Services.AddBlazorWebViewDeveloperTools();

@@ -60,6 +60,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
         <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
         <PackageReference Include="Microsoft.Data.Sqlite.Core" Version="9.0.3" />
         <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.50" />
@@ -78,6 +79,6 @@
 		<Reference Include="DatabaseConnector">
 			<HintPath>..\DLLs\DatabaseConnector.dll</HintPath>
 		</Reference>
-    </ItemGroup>
+	</ItemGroup>
 
 </Project>
