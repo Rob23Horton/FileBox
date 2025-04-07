@@ -1,4 +1,5 @@
 ﻿{
 	"Windows": "C:\\ProgramData\\FileBox",
-	"Linux": "\\DATA\\FileBox"
+	"Linux": "\\DATA\\FileBox",
+	"Android": "\\Android\\Data\\com.company.FileBox"
 }

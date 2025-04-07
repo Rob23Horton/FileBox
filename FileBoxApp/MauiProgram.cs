@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using DatabaseConnector.Services;
+using SQLitePCL;
+using Microsoft.Extensions.Logging;
 
 namespace FileBoxApp
 {
@@ -6,6 +8,9 @@ namespace FileBoxApp
 	{
 		public static MauiApp CreateMauiApp()
 		{
+			Batteries.Init();
+			Batteries_V2.Init();
+
 			var builder = MauiApp.CreateBuilder();
 			builder
 				.UseMauiApp<App>()
@@ -15,6 +20,11 @@ namespace FileBoxApp
 				});
 
 			builder.Services.AddMauiBlazorWebView();
+
+			Directory.SetCurrentDirectory(FileSystem.AppDataDirectory);
+
+			//Adds database connector using FileBox.StartUp
+			builder.Services.AddSingleton<IDatabaseConnector>(FileBox.FileBox.StartUp());
 
 #if DEBUG
 			builder.Services.AddBlazorWebViewDeveloperTools();

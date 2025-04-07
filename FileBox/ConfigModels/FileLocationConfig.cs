@@ -11,5 +11,6 @@ namespace FileBox.ConfigModels
 	{
 		public string Windows { get; set; }
 		public string Linux { get; set; }
+		public string Android { get; set; }
 	}
 }
