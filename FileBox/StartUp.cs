@@ -11,7 +11,7 @@ namespace FileBox
 {
 	public static class FileBox
 	{
-		static public IDatabaseConnector StartUp()
+		static public IDatabaseConnector StartUp(string? SqliteDirectiory)
 		{
 			DatabaseType DbType = GetDatabaseType();
 
@@ -19,11 +19,12 @@ namespace FileBox
 
 			if (DbType == DatabaseType.MSqlite || DbType == DatabaseType.Sqlite) 
 			{
-				//Gets the path to the database as well as creates the path if it doesn't already exist
-				string SqliteLocation = GetSqliteDatabaseLocation();
-				Directory.CreateDirectory(SqliteLocation);
+				if (SqliteDirectiory == null)
+				{
+					throw new Exception("SqliteDirectory must be set to create a Sqlite connection.");
+				}
 
-				DatabaseConnector = new DatabaseConnector.Services.DatabaseConnector(DbType, $"Data Source={SqliteLocation}\\FileBoxDatabase.db");
+				DatabaseConnector = new DatabaseConnector.Services.DatabaseConnector(DbType, $"Data Source={SqliteDirectiory}\\FileBoxDatabase.db");
 
 				//Gets tables config
 				List<Table> Tables = GetDatabaseTables();
@@ -88,27 +89,6 @@ namespace FileBox
 	#endregion
 
 	#region Sqlite Database
-		static string GetSqliteDatabaseLocation()
-		{
-			if (OperatingSystem.IsWindows())
-			{
-				return "C:\\ProgramData\\FileBox";
-			}
-			else if (OperatingSystem.IsLinux())
-			{
-				return "\\DATA\\FileBox";
-			}
-			else if (OperatingSystem.IsAndroid())
-			{
-				return "\\Android\\Data\\com.company.FileBox";
-			}
-			else
-			{
-				throw new Exception("Operating System is not supported! Please use Windows or Linux!");
-			}
-
-
-		}
 
 		static void CreateTables(DatabaseConnector.Services.IDatabaseConnector Connection, List<Table> Tables)
 		{

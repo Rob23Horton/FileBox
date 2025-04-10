@@ -75,10 +75,11 @@
       <ProjectReference Include="..\FileBox\FileBox.csproj" />
     </ItemGroup>
 
-	<ItemGroup>
-		<Reference Include="DatabaseConnector">
-			<HintPath>..\DLLs\DatabaseConnector.dll</HintPath>
-		</Reference>
-	</ItemGroup>
+    <ItemGroup>
+      <Reference Include="DatabaseConnector">
+        <HintPath>..\DLLs\DatabaseConnector.dll</HintPath>
+		  <Private>True</Private>
+      </Reference>
+    </ItemGroup>
 
 </Project>

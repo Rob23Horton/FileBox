@@ -4,6 +4,10 @@ using Microsoft.Extensions.Logging;
 
 using Blazored.LocalStorage;
 using FileBoxApp.Services;
+using FileBox.Interfaces;
+using FileBox.Repositories;
+
+using System;
 
 
 namespace FileBoxApp
@@ -28,13 +32,19 @@ namespace FileBoxApp
 			Directory.SetCurrentDirectory(FileSystem.AppDataDirectory);
 
 			//Adds database connector using FileBox.StartUp
-			builder.Services.AddSingleton<IDatabaseConnector>(FileBox.FileBox.StartUp());
+			string databaseLocation = OperatingSystem.IsWindows() ? "C:\\ProgramData\\FileBox" : FileSystem.AppDataDirectory;
+			builder.Services.AddSingleton<IDatabaseConnector>(FileBox.FileBox.StartUp(databaseLocation));
 
 			//Adds local storage service
 			builder.Services.AddBlazoredLocalStorage();
 
 			//Custom Services
 			builder.Services.AddScoped<IRecentFilesRepository, RecentFileRepository>();
+
+			builder.Services.AddScoped<IFileRepository, FileRepository>();
+			builder.Services.AddScoped<ITagRepository, TagRepository>();
+			builder.Services.AddScoped<IPathRepository, PathRepository>();
+			builder.Services.AddScoped<IFileInformationRepository, FileInformationRepository>();
 
 #if DEBUG
 			builder.Services.AddBlazorWebViewDeveloperTools();

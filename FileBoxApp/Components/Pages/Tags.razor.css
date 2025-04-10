@@ -1,0 +1,22 @@
+﻿
+.top-container :last-child{
+	position: absolute;
+	right: 10px;
+}
+
+.tag-name {
+	width: 50vw;
+}
+
+.tag-using-no{
+	width: 25vw;
+}
+
+.tag-edit-heading{
+	padding-right: 10px
+}
+
+.tag-edit {
+	width: 25vw;
+	text-align: right;
+}
