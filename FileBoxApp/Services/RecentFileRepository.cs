@@ -28,8 +28,11 @@ namespace FileBoxApp.Services
 				RecentFiles.Remove(FileToRemove);
 			}
 
-			//Adds the new file and saves it back to the local storage
+			//Adds the new file and saves it back to the local storage and removes any existing openings of that file
+			RecentFiles.RemoveAll(rc => rc.Id == RecentFile.Id);
+
 			RecentFiles.Add(RecentFile);
+
 			await _localStorage.SetItemAsync("RecentFiles", RecentFiles);
 		}
 

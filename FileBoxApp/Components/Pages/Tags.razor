@@ -132,6 +132,13 @@
 
 		AllTags = _TagRepository.GetAllTags();
 
+		//Gets the number of files that use the tag
+		TagFiles = new Dictionary<long, int>();
+		foreach (Tag tag in AllTags)
+		{
+			TagFiles.Add(tag.Id, _TagRepository.NoOfFiles((int)tag.Id));
+		}
+
 		NewModal.Close();
 		StateHasChanged();
 	}

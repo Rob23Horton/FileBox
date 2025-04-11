@@ -2,17 +2,19 @@
 <PageTitle>Home</PageTitle>
 
 @inject IRecentFilesRepository _RecentFileService;
+@inject IFileRepository _FileRepository;
 
 <div class="search-container">
-	<InputText class="form-control search-box" placeholder="Search" @bind-value="@SearchValue" @bind-value:after="Search"/>
+	<InputText class="form-control search-box" placeholder="Search" @bind-value="@SearchValue" @bind-value:after="Search" autocomplete="off"/>
 </div>
-
-<p>@SearchValue</p>
 
 @if (ShowRecentFiles)
 {
 	<div class="flex-column recent-container">
-		<h2>Recent Files</h2>
+		<div class="d-flex flex-row top-container">
+			<h2>Recent Files</h2>
+			<button type="button" class="btn btn-outline-primary" @onclick="@(() => ClearRecents())">Clear</button>
+		</div>
 		<hr />
 		@if (RecentFiles.Count() == 0)
 		{
@@ -30,7 +32,11 @@
 				@foreach (RecentFile recentFile in RecentFiles.OrderByDescending(r => r.Accessed))
 				{
 					<tr class="flex-row">
-						<td class="recent-name-item">@recentFile.Name</td>
+						<td class="recent-name-item">
+							<a href="viewdocument/@((MarkupString)recentFile.Id.ToString())">
+								@recentFile.Name
+							</a>
+						</td>
 						<td class="recent-tags-item">None</td> @* TODO - Do logic for showning all the tags *@
 						<td class="recent-accessed-item">
 							@if (recentFile.Accessed.Date == DateTime.Now.Date)
@@ -50,6 +56,29 @@
 
 	</div>
 }
+else
+{
+	<div>
+		<h2>Results</h2>
+		<table>
+			<tr>
+				<th>Name</th>
+				<th>Tags</th>
+			</tr>
+			@foreach (FileBoxFile file in FileResults)
+			{
+				<tr>
+					<td>
+						<a href="viewdocument/@((MarkupString)file.Id.ToString())">@file.Name</a>
+					</td>
+					<td>
+						None
+					</td>
+				</tr>
+			}
+		</table>
+	</div>
+}
 
 @code
 {
@@ -58,6 +87,8 @@
 
 	private bool ShowRecentFiles = true;
 	private List<RecentFile> RecentFiles { get; set; } = new List<RecentFile>();
+
+	private List<FileBoxFile> FileResults { get; set; } = new List<FileBoxFile>();
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -74,6 +105,21 @@
 		base.OnInitialized();
 	}
 
+	private async void ClearRecents()
+	{
+		try
+		{
+			await _RecentFileService.ClearRecentFiles();
+
+			RecentFiles = await _RecentFileService.GetRecentFiles();
+			StateHasChanged();
+		}
+		catch
+		{
+
+		}
+	}
+
 	private void Search()
 	{
 		Console.WriteLine("Searching");
@@ -81,10 +127,14 @@
 		if (String.IsNullOrWhiteSpace(SearchValue))
 		{
 			ShowRecentFiles = true;
-			return;            
+			return;
 		}
 
+		FileResults = _FileRepository.GetFilesLikeName($"%{SearchValue}%");
+
 		ShowRecentFiles = false;
+
+		StateHasChanged();
 
 	}
 

@@ -1,0 +1,86 @@
+﻿@page "/newdocument"
+
+@inject IFileRepository _FileRespository;
+@inject IPathRepository _PathRespository;
+
+<h1>Document</h1>
+
+<button class="btn btn-primary" @onclick="CreateTestData">Create Test Data</button>
+
+<button class="btn btn-primary" @onclick="ClearTestData">Clear Test Data</button>
+
+<p>@OutputString</p>
+
+@code
+{
+    private string OutputString { get; set; } = "";
+
+    private void CreateTestData()
+    {
+
+        List<FileBoxFile> filesToAdd = new List<FileBoxFile>()
+        {
+            new FileBoxFile() { Name = "Flower1", Created = DateTime.Parse("2023-10-03 19:39:00"), Type = "png" },
+            new FileBoxFile() { Name = "ACompletelyUnabiguouseTestFile", Created = DateTime.Parse("2023-11-23 16:52:33"), Type = "txt"},
+            new FileBoxFile() { Name = "DSC06849", Created = DateTime.Parse("2024-07-28 11:31:00"), Type = "JPG"},
+            new FileBoxFile() { Name = "DSC07791", Created = DateTime.Parse("2024-08-13 12:39:00"), Type = "JPG"},
+            new FileBoxFile() { Name = "DSC07827", Created = DateTime.Parse("2024-08-14 15:20:00"), Type = "ARW"},
+            new FileBoxFile() { Name = "Robert Horton CV", Created = DateTime.Parse("2025-04-10 21:37:15"), Type = "pdf"},
+            new FileBoxFile() { Name = "assassination classroom picture 2", Created = DateTime.Parse("2021-08-31 10:20:38"), Type = "jfif"},
+            new FileBoxFile() { Name = "IMG-20250316-WA0000", Created = DateTime.Parse("2025-03-16 10:38:00"), Type = "jpg"},
+            new FileBoxFile() { Name = "Screenshot_20241204-181952", Created = DateTime.Parse("2024-11-04 08:19:00"), Type = "png"},
+            new FileBoxFile() {Name = "Gif Yippee Meme Test", Created = DateTime.Parse("2025-04-11 14:45:17"), Type = "gif"},
+            new FileBoxFile() { Name = "01 Sleeping On The Blacktop", Created = DateTime.Parse("2025-03-29 19:31:49"), Type = "mp3"},
+            new FileBoxFile() { Name = "VALORANT   2021-09-03 11-53-30", Created = DateTime.Parse("2021-09-03 11:53:30"), Type = "mp4"}
+        };
+
+        foreach (FileBoxFile file in filesToAdd)
+        {
+            _FileRespository.AddFile(file);
+        }
+
+
+        List<FileBoxPath> pathsToAdd = new List<FileBoxPath>()
+        {
+            new FileBoxPath() { FileCode = 1, DeviceName = "ROB", FilePath = "D:\\Pictures\\Sony Nex 7 Pictures\\Flowers\\Flowers\\", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 2, DeviceName = "ROB", FilePath = "D:\\", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 3, DeviceName = "ROB", FilePath = "D:\\Pictures\\Cameras\\Nex 7\\", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 4, DeviceName = "ROB", FilePath = "D:\\Pictures\\Cameras\\Nex 7\\", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 5, DeviceName = "ROB", FilePath = "D:\\Pictures\\Cameras\\Nex 7\\", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 6, DeviceName = "ROB", FilePath = "D:\\2025\\", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 7, DeviceName = "ROB", FilePath = "D:\\a to do\\", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 8, DeviceName = "Blade10 Ultra", FilePath = "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images/", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 9, DeviceName = "Blade10 Ultra", FilePath = "/storage/emulated/0/Pictures/Screenshots/", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 10, DeviceName = "ROB", FilePath = "D:\\2025\\Coding\\FileBox\\", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 10, DeviceName = "Blade10 Ultra", FilePath = "/storage/emulated/0/Download/", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 11, DeviceName = "ROB", FilePath = "D:\\music\\Colter Wall\\Imaginary Appalachia [EP]\\", CurrentlyActive = true},
+            new FileBoxPath() { FileCode = 12, DeviceName = "ROB", FilePath = "C:\\Users\\Robert\\Videos\\Captures\\", CurrentlyActive = true}
+        };
+
+        foreach (FileBoxPath path in pathsToAdd)
+        {
+            _PathRespository.AddPath(path);
+        }
+
+        OutputString = "Test Data has been added!";
+    }
+
+    private void ClearTestData()
+    {
+        List<FileBoxFile> filesToRemove = _FileRespository.GetAllFiles();
+
+        foreach (FileBoxFile file in filesToRemove)
+        {
+            List<FileBoxPath> filePaths = _PathRespository.GetAllPathsFromFileCode((int)file.Id);
+
+            foreach (FileBoxPath path in filePaths)
+            {
+                _PathRespository.RemovePath((int)path.Id);
+            }
+
+            _FileRespository.DeleteFile((int)file.Id);
+        }
+
+        OutputString = "Test Data has been cleared!";
+    }
+}

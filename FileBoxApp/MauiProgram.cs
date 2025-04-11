@@ -40,6 +40,7 @@ namespace FileBoxApp
 
 			//Custom Services
 			builder.Services.AddScoped<IRecentFilesRepository, RecentFileRepository>();
+			builder.Services.AddScoped<ILocalFileSystemService, LocalFileSystemService>();
 
 			builder.Services.AddScoped<IFileRepository, FileRepository>();
 			builder.Services.AddScoped<ITagRepository, TagRepository>();

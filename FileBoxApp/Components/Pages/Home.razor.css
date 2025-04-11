@@ -1,9 +1,13 @@
 ﻿
+.top-container :last-child {
+	position: absolute;
+	right: 20px;
+}
+
 .search-container {
 	position: sticky;
 	top: 5px;
 	background-color: white;
-
 	padding: 10px;
 }
 
