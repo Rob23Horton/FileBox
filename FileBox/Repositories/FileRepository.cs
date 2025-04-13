@@ -95,5 +95,22 @@ namespace FileBox.Repositories
 			//Delete the tag
 			_databaseConnector.Delete<FileTag>(fileTags[0]);
 		}
+
+		public int GetFileId(FileBoxFile File)
+		{
+			Select select = new Select();
+			select.AddWhere("Name", File.Name);
+			select.AddWhere("Created", File.Created);
+			select.AddWhere("Type", File.Type);
+
+			List<FileBoxFile> files = _databaseConnector.Select<FileBoxFile>(select);
+
+			if (files.Count() == 0)
+			{
+				throw new Exception($"File wasn't found for {File.Name}.{File.Type} with creation - {File.Created}.");
+			}
+
+			return (int)files[0].Id;
+		}
 	}
 }

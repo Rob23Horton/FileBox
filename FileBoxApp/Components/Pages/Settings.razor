@@ -1,7 +1,44 @@
 ﻿@page "/settings"
 
-<h3>Settings</h3>
+@inject IFileRepository _FileRepository;
+@inject IPathRepository _PathRespository;
 
-@code {
+<h1>Settings</h1>
+
+<div class="d-flex flex-column">
+    <h2>Database Settings</h2>
+    <button type="button" class="btn btn-danger" @onclick="ClearFilesAndPaths">Delete all files and paths</button>
+</div>
+
+
+
+@code
+{
+
+    private void ClearFilesAndPaths()
+    {
+        try
+        {
+            List<FileBoxFile> files = _FileRepository.GetAllFiles();
+
+            foreach (FileBoxFile file in files)
+            {
+                List<FileBoxPath> paths = _PathRespository.GetAllPathsFromFileCode((int)file.Id);
+
+                foreach (FileBoxPath path in paths)
+                {
+                    _PathRespository.RemovePath((int)path.Id);
+                }
+
+                //TODO - delete all tags for file
+
+                _FileRepository.DeleteFile((int)file.Id);
+            }
+        }
+        catch
+        {
+            
+        }
+    }
 
 }

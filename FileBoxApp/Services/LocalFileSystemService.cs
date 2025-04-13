@@ -53,5 +53,31 @@ namespace FileBoxApp.Services
 				return new byte[0];
 			}
 		}
+
+		public bool FileExists(FileBoxFile FileBoxFile, FileBoxPath Path)
+		{
+			try
+			{
+				string filePath = $"{Path.FilePath}{FileBoxFile.Name}.{FileBoxFile.Type}";
+				return File.Exists(filePath);
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		public long GetByteSize(FileBoxFile File, FileBoxPath Path)
+		{
+			try
+			{
+				string filePath = $"{Path.FilePath}{File.Name}.{File.Type}";
+				return new FileInfo(filePath).Length;
+			}
+			catch
+			{
+				return 0;
+			}
+		}
 	}
 }

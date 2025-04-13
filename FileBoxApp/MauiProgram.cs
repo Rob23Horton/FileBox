@@ -39,6 +39,7 @@ namespace FileBoxApp
 			builder.Services.AddBlazoredLocalStorage();
 
 			//Custom Services
+			builder.Services.AddSingleton<FilePickerService>();
 			builder.Services.AddScoped<IRecentFilesRepository, RecentFileRepository>();
 			builder.Services.AddScoped<ILocalFileSystemService, LocalFileSystemService>();
 

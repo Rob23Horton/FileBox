@@ -2,85 +2,96 @@
 
 @inject IFileRepository _FileRespository;
 @inject IPathRepository _PathRespository;
+@inject FilePickerService _FilePickerService;
 
 <h1>Document</h1>
 
-<button class="btn btn-primary" @onclick="CreateTestData">Create Test Data</button>
+<button class="btn btn-primary" @onclick="SelectFile">Select File</button>
 
-<button class="btn btn-primary" @onclick="ClearTestData">Clear Test Data</button>
+@if (File is not null)
+{
+	<button class="btn btn-success" @onclick="AddFiles">Add File</button>
+	<button class="btn btn-danger" @onclick="Reset">Cancel</button>
+}
 
-<p>@OutputString</p>
+<p>@ErrorMessage</p>
+
+<DocumentViewer @ref="documentViewer"></DocumentViewer>
 
 @code
 {
-    private string OutputString { get; set; } = "";
+	private FileBoxFile File { get; set;}
+	private FileBoxPath Path { get; set; }
 
-    private void CreateTestData()
-    {
+	private string ErrorMessage { get; set; }
 
-        List<FileBoxFile> filesToAdd = new List<FileBoxFile>()
-        {
-            new FileBoxFile() { Name = "Flower1", Created = DateTime.Parse("2023-10-03 19:39:00"), Type = "png" },
-            new FileBoxFile() { Name = "ACompletelyUnabiguouseTestFile", Created = DateTime.Parse("2023-11-23 16:52:33"), Type = "txt"},
-            new FileBoxFile() { Name = "DSC06849", Created = DateTime.Parse("2024-07-28 11:31:00"), Type = "JPG"},
-            new FileBoxFile() { Name = "DSC07791", Created = DateTime.Parse("2024-08-13 12:39:00"), Type = "JPG"},
-            new FileBoxFile() { Name = "DSC07827", Created = DateTime.Parse("2024-08-14 15:20:00"), Type = "ARW"},
-            new FileBoxFile() { Name = "Robert Horton CV", Created = DateTime.Parse("2025-04-10 21:37:15"), Type = "pdf"},
-            new FileBoxFile() { Name = "assassination classroom picture 2", Created = DateTime.Parse("2021-08-31 10:20:38"), Type = "jfif"},
-            new FileBoxFile() { Name = "IMG-20250316-WA0000", Created = DateTime.Parse("2025-03-16 10:38:00"), Type = "jpg"},
-            new FileBoxFile() { Name = "Screenshot_20241204-181952", Created = DateTime.Parse("2024-11-04 08:19:00"), Type = "png"},
-            new FileBoxFile() {Name = "Gif Yippee Meme Test", Created = DateTime.Parse("2025-04-11 14:45:17"), Type = "gif"},
-            new FileBoxFile() { Name = "01 Sleeping On The Blacktop", Created = DateTime.Parse("2025-03-29 19:31:49"), Type = "mp3"},
-            new FileBoxFile() { Name = "VALORANT   2021-09-03 11-53-30", Created = DateTime.Parse("2021-09-03 11:53:30"), Type = "mp4"}
-        };
+	private DocumentViewer documentViewer { get; set; }
 
-        foreach (FileBoxFile file in filesToAdd)
-        {
-            _FileRespository.AddFile(file);
-        }
+	private async void SelectFile()
+	{
+		try
+		{
+			string filePath = await _FilePickerService.PickFileAsync();
 
+			if (String.IsNullOrWhiteSpace(filePath))
+			{
+				return;
+			}
 
-        List<FileBoxPath> pathsToAdd = new List<FileBoxPath>()
-        {
-            new FileBoxPath() { FileCode = 1, DeviceName = "ROB", FilePath = "D:\\Pictures\\Sony Nex 7 Pictures\\Flowers\\Flowers\\", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 2, DeviceName = "ROB", FilePath = "D:\\", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 3, DeviceName = "ROB", FilePath = "D:\\Pictures\\Cameras\\Nex 7\\", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 4, DeviceName = "ROB", FilePath = "D:\\Pictures\\Cameras\\Nex 7\\", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 5, DeviceName = "ROB", FilePath = "D:\\Pictures\\Cameras\\Nex 7\\", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 6, DeviceName = "ROB", FilePath = "D:\\2025\\", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 7, DeviceName = "ROB", FilePath = "D:\\a to do\\", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 8, DeviceName = "Blade10 Ultra", FilePath = "/storage/emulated/0/Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Images/", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 9, DeviceName = "Blade10 Ultra", FilePath = "/storage/emulated/0/Pictures/Screenshots/", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 10, DeviceName = "ROB", FilePath = "D:\\2025\\Coding\\FileBox\\", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 10, DeviceName = "Blade10 Ultra", FilePath = "/storage/emulated/0/Download/", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 11, DeviceName = "ROB", FilePath = "D:\\music\\Colter Wall\\Imaginary Appalachia [EP]\\", CurrentlyActive = true},
-            new FileBoxPath() { FileCode = 12, DeviceName = "ROB", FilePath = "C:\\Users\\Robert\\Videos\\Captures\\", CurrentlyActive = true}
-        };
+			FileInfo fileInfo = new FileInfo(filePath);
 
-        foreach (FileBoxPath path in pathsToAdd)
-        {
-            _PathRespository.AddPath(path);
-        }
+			File = new FileBoxFile()
+				{
+					Name = fileInfo.Name.Remove(fileInfo.Name.LastIndexOf("."), fileInfo.Extension.Length),
+					Created = fileInfo.CreationTime,
+					Type = fileInfo.Extension.Replace(".", "")
+				};
+			Path = new FileBoxPath() { DeviceName = DeviceInfo.Name, CurrentlyActive = true, FilePath = $"{fileInfo.DirectoryName.Replace("\\", "/")}/" };
 
-        OutputString = "Test Data has been added!";
-    }
+			await documentViewer.LoadFile(File, new List<FileBoxPath>() { Path }, false);
 
-    private void ClearTestData()
-    {
-        List<FileBoxFile> filesToRemove = _FileRespository.GetAllFiles();
+			ErrorMessage = "";
+			StateHasChanged();
+		}
+		catch
+		{
+		}
+	}
 
-        foreach (FileBoxFile file in filesToRemove)
-        {
-            List<FileBoxPath> filePaths = _PathRespository.GetAllPathsFromFileCode((int)file.Id);
+	private async Task AddFiles()
+	{
+		try
+		{
+			int id = _FileRespository.GetFileId(File);
+			ErrorMessage = "File has already been added.";
+			StateHasChanged();
+			return;
+		}
+		catch
+		{
+			ErrorMessage = "";
+			StateHasChanged();
+		}
 
-            foreach (FileBoxPath path in filePaths)
-            {
-                _PathRespository.RemovePath((int)path.Id);
-            }
+		try
+		{
+			_FileRespository.AddFile(File.Clone());
+			File.Id = _FileRespository.GetFileId(File);
 
-            _FileRespository.DeleteFile((int)file.Id);
-        }
+			Path.FileCode = File.Id;
+			_PathRespository.AddPath(Path.Clone());
 
-        OutputString = "Test Data has been cleared!";
-    }
+			ErrorMessage = "File has been added.";
+			StateHasChanged();
+		}
+		catch
+		{
+		}
+	}
+
+	private void Reset()
+	{
+		documentViewer.SetUserMessage("");
+		documentViewer.ClearImage();
+	}
 }

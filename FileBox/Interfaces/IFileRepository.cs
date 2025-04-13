@@ -10,6 +10,7 @@ namespace FileBox.Interfaces
 	public interface IFileRepository
 	{
 		public FileBoxFile GetFileById(int Id);
+		public int GetFileId(FileBoxFile File);
 		public List<FileBoxFile> GetAllFiles();
 		public List<FileBoxFile> GetFilesLikeName(string Name);
 
