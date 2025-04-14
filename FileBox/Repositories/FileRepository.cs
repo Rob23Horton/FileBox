@@ -100,14 +100,13 @@ namespace FileBox.Repositories
 		{
 			Select select = new Select();
 			select.AddWhere("Name", File.Name);
-			select.AddWhere("Created", File.Created);
 			select.AddWhere("Type", File.Type);
 
 			List<FileBoxFile> files = _databaseConnector.Select<FileBoxFile>(select);
 
 			if (files.Count() == 0)
 			{
-				throw new Exception($"File wasn't found for {File.Name}.{File.Type} with creation - {File.Created}.");
+				throw new Exception($"File wasn't found for {File.Name}.{File.Type}.");
 			}
 
 			return (int)files[0].Id;

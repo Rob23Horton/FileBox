@@ -66,6 +66,8 @@
 			ErrorMessage = "File has already been added.";
 			StateHasChanged();
 			return;
+
+			//TODO - If file already exists then check if path also already exists (if not then add it)
 		}
 		catch
 		{
@@ -82,11 +84,13 @@
 			_PathRespository.AddPath(Path.Clone());
 
 			ErrorMessage = "File has been added.";
-			StateHasChanged();
 		}
 		catch
 		{
+			ErrorMessage = "An error occured while adding file.";	
 		}
+
+		StateHasChanged();
 	}
 
 	private void Reset()

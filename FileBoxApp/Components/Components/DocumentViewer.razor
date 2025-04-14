@@ -7,6 +7,10 @@
 	<div>
 		@if (IsImage)
 		{
+			<select class="form-control" style="margin-bottom: 10px" @onchange="UpdateImageStyle">
+				<option value="width">Width</option>
+				<option value="height">Height</option>
+			</select>
 			<img src="@FileData" style="@((MarkupString)ImageStyle)" />
 		}
 		else if (IsText)
@@ -29,10 +33,9 @@
 		}
 	</div>
 }
-else
-{
-	<p>@UserMessage</p>
-}
+
+<p>@((MarkupString)UserMessage)</p>
+
 
 @code
 {
@@ -71,19 +74,24 @@ else
 	{
 		try
 		{
+			FileData = String.Empty;
+			UserMessage = "Loading...";
+			StateHasChanged();
+
 			IsImage = !IsNotImage(File);
 
 			//Checks all the file paths to see if they exist on the current device
 			foreach (FileBoxPath path in Paths)
 			{
+				bool WasActive = path.CurrentlyActive;
+
 				UserMessage = $"Check file exists - Path {Paths.IndexOf(path) + 1}/{Paths.Count()}";
 				StateHasChanged();
 
 				path.CurrentlyActive = _FileSystem.FileExists(File, path);
 
 				//Updates path to be current
-				path.CurrentlyActive = true;
-				if (UpdatePaths) //This had to be added otherwise it would change all the paths when showing a path that isn't in the db
+				if (UpdatePaths && WasActive != path.CurrentlyActive) //This had to be added otherwise it would change all the paths when showing a path that isn't in the db
 				{
 					_PathRespository.EditPath(path);
 				}
@@ -96,8 +104,8 @@ else
 			UserMessage = $"Opening file.";
 			StateHasChanged();
 
-			//TODO - Make system check from first path to last to check if file exists
-			foreach (FileBoxPath Path in Paths.Where(p => p.CurrentlyActive).OrderBy(p => p.CurrentlyActive))
+			//Gets data from the paths where the file exists
+			foreach (FileBoxPath Path in Paths.Where(p => p.CurrentlyActive == true).ToList().OrderBy(p => p.CurrentlyActive).ToList())
 			{
 				if (File.Type.ToLower() == "txt")
 				{
@@ -138,24 +146,15 @@ else
 			//When image
 			if (IsImage)
 			{
-				using var image = SixLabors.ImageSharp.Image.Load(data);
-
-				int width = image.Width;
-				int height = image.Height;
-
-				if (width > height)
-				{
-					ImageStyle = "height: 99vh";
-				}
-				else
-				{
-					ImageStyle = "width: 100%";
-				}
-
+				ImageStyle = "width: 100%";
 				FileData = $"data:{ImageType};base64,{Convert.ToBase64String(data)}";
+				UserMessage = "";
+
 				StateHasChanged();
 				return;
 			}
+
+			UserMessage = "";
 
 			//When not an image
 			switch (File.Type.ToLower())
@@ -186,13 +185,25 @@ else
 					break;
 			}
 
-			UserMessage = "";
 			StateHasChanged();
 		}
 		catch (Exception e)
 		{
 			Console.WriteLine(e.ToString());
 		}
+	}
+
+	public void UpdateImageStyle(ChangeEventArgs e)
+	{
+		if ((string)e.Value == "width")
+		{
+			ImageStyle = "width: 100%";
+		}
+		else
+		{
+			ImageStyle = "height: 99vh";
+		}
+		StateHasChanged();
 	}
 
 	public void SetUserMessage(string text)
