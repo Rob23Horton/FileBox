@@ -26,7 +26,7 @@
 				<tr>
 					<th>Name</th>
 					<th>Tags</th>
-					<th>Last Accessed</th>
+					<th class="last-accessed">Last Accessed</th>
 				</tr>
 
 				@foreach (RecentFile recentFile in RecentFiles.OrderByDescending(r => r.Accessed))
@@ -37,8 +37,14 @@
 								@recentFile.Name
 							</a>
 						</td>
-						<td class="recent-tags-item">None</td> @* TODO - Do logic for showning all the tags *@
-						<td class="recent-accessed-item">
+						<td class="recent-tags-item">
+							@if (recentFile.Tags.Count() == 0)
+							{
+								<p>None</p>
+							}
+							<TagsViewer Tags="@recentFile.Tags"></TagsViewer>
+						</td>
+						<td class="recent-accessed-item last-accessed">
 							@if (recentFile.Accessed.Date == DateTime.Now.Date)
 							{
 								@recentFile.Accessed.ToShortTimeString()
@@ -72,7 +78,11 @@ else
 						<a href="viewdocument/@((MarkupString)file.Id.ToString())">@file.Name</a>
 					</td>
 					<td>
-						None
+						@if (TagResult[(int)file.Id].Count() == 0)
+						{
+							<p>None</p>
+						}
+						<TagsViewer Tags="@TagResult[(int)file.Id]"></TagsViewer>
 					</td>
 				</tr>
 			}
@@ -89,6 +99,7 @@ else
 	private List<RecentFile> RecentFiles { get; set; } = new List<RecentFile>();
 
 	private List<FileBoxFile> FileResults { get; set; } = new List<FileBoxFile>();
+	private Dictionary<int, List<Tag>> TagResult { get; set; } = new Dictionary<int, List<Tag>>();
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -131,6 +142,13 @@ else
 		}
 
 		FileResults = _FileRepository.GetFilesLikeName($"%{SearchValue}%");
+		//TODO - Gets Psuedoname files as well
+
+		TagResult = new Dictionary<int, List<Tag>>();
+		foreach (FileBoxFile file in FileResults)
+		{
+			TagResult.Add((int)file.Id, _FileRepository.GetTagsForFile((int)file.Id));
+		}
 
 		ShowRecentFiles = false;
 

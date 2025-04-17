@@ -3,11 +3,77 @@
 @inject IRecentFilesRepository _RecentFilesRepository;
 @inject IFileRepository _FileRepository;
 @inject IPathRepository _PathRespository;
+@inject ITagRepository _TagRepository;
+@inject IFileInformationRepository _FileInformationRepository;
 
 
-<h3>@File.Name</h3>
+<div class="d-flex flex-row">
+	<div class="d-flex flex-column">
+		<h3>@Name</h3>
+		@if (OriginalName is not null)
+		{
+			<i>@OriginalName</i>
+		}
+	</div>
+	<div class="d-flex flex-row flex-wrap button-container">
+		<button type="button" class="btn btn-primary header-btn" @onclick="@(() => TagModal.Open())">Tags</button>
+		<button type="button" class="btn btn-success" @onclick="@(() => InformationModal.Open())">Information</button>
+	</div>
+</div>
+
+<TagsViewer Tags="@Tags"></TagsViewer>
 
 <DocumentViewer @ref="docViewer"></DocumentViewer>
+
+<Modal @ref="TagModal">
+	<Title>Tags</Title>
+	<Body>
+		<div>
+			<InputText class="form-control tag-search" style="margin-bottom:10px;" @bind-Value="@SearchValue" @bind-Value:after="SearchTag" placeholder="Tag Search" autocomplete="off"></InputText>
+			<div>
+				@foreach (Tag resultTag in ResultTags)
+				{
+					<div class="d-flex flex-row">
+						<p>@resultTag.Name</p>
+						<button type="button" class="tag-button btn btn-success" @onclick="@(() => AddTag(resultTag))">Add</button>
+					</div>
+				}
+				@if (ResultTags.Count() > 0)
+				{
+					<hr />
+				}
+			</div>
+		</div>
+		<div>
+			@foreach (Tag tag in Tags)
+			{
+				<div class="d-flex flex-row">
+					<p>@tag.Name</p>
+					<button type="button" class="tag-button btn btn-danger" @onclick="@(() => DeleteTag(tag))">Delete</button>
+				</div>
+			}
+		</div>
+	</Body>
+	<Footer>
+		<div>
+			<button type="button" class="btn btn-danger" @onclick="@(() => TagModal.Close())">Close</button>
+		</div>
+	</Footer>
+</Modal>
+
+<Modal @ref="InformationModal">
+	<Title>Information</Title>
+	<Body>
+		<div>
+			<InputText class="form-control" @bind-value="@Psuedoname.Value" @bind-value:after="UpatePsuedoname" placeholder="Psuedoname"></InputText>
+		</div>
+	</Body>
+	<Footer>
+		<div>
+			<button type="button" class="btn btn-danger" @onclick="@(() => InformationModal.Close())">Close</button>
+		</div>
+	</Footer>
+</Modal>
 
 @code
 {
@@ -25,19 +91,38 @@
 	}
 	private int iFileId {get; set;}
 
+	private string Name { get; set; }
+	private string? OriginalName { get; set; }
+
 	private FileBoxFile File { get; set; }
 	private List<FileBoxPath> Paths { get; set; }
-	private List<Tag> Tags { get; set; }
+	private List<Tag> Tags { get; set; } = new List<Tag>();
+	private List<InfoValue> Information { get; set; } = new List<InfoValue>();
+	private RecentFile RecentFile { get; set; } = new RecentFile();
 
-	private DocumentViewer docViewer { get; set; }
+	private DocumentViewer docViewer { get; set; } = new DocumentViewer();
 
 	private string? FirstErrorMessage { get; set; } = null;
+
+	private Modal TagModal { get; set; }
+	private string SearchValue { get; set; } = String.Empty;
+	private List<Tag> AllTags { get; set; } = new List<Tag>();
+	private List<Tag> ResultTags { get; set; } = new List<Tag>();
+
+	private Modal InformationModal { get; set; }
+	private InfoValue? Psuedoname { get; set; } = new InfoValue();
+
+	private string ModalErrorMessage { get; set; } = String.Empty;
 
 	protected override async Task OnInitializedAsync()
 	{
 		try
 		{
 			File = _FileRepository.GetFileById(iFileId);
+			Information = _FileInformationRepository.GetAllInfoFromFileCode(iFileId);
+			Tags = _FileRepository.GetTagsForFile(iFileId);
+
+			await LoadInformation();
 
 			//Gets all the paths that are on registered for the current device
 			Paths = _PathRespository.GetAllPathsFromFileCode(iFileId);
@@ -62,6 +147,8 @@
 		}
 
 		await base.OnInitializedAsync();
+
+		AllTags = _TagRepository.GetAllTags();
 	}
 
 	protected override void OnAfterRender(bool firstRender)
@@ -72,5 +159,127 @@
 		}
 
 		base.OnAfterRender(firstRender);
+	}
+
+	private async Task LoadInformation()
+	{
+		try
+		{
+			List<InfoValue> psueodnameList = Information.Where(i => i.ValueName.ToLower() == "psuedoname").ToList();
+			if (psueodnameList.Count() > 0)
+			{
+				Psuedoname = psueodnameList.First();
+				Name = Psuedoname.Value;
+				OriginalName = File.Name;
+			}
+			else
+			{
+				Psuedoname = new InfoValue() { FileCode = iFileId, ValueName = "Psuedoname", Value = String.Empty };
+				Name = File.Name;
+				OriginalName = null;
+			}
+
+			RecentFile = new RecentFile() { Id = (int)File.Id, Name = Name, Accessed = DateTime.Now, Tags = Tags };
+
+			await _RecentFilesRepository.AddRecentFile(RecentFile);
+		}
+		catch
+		{
+
+		}
+	}
+
+	private void SearchTag()
+	{
+		try
+		{
+			if (String.IsNullOrWhiteSpace(SearchValue))
+			{
+				ResultTags.Clear();
+				StateHasChanged();
+				return;
+			}
+
+			ResultTags = AllTags.Where(t => t.Name.ToLower().Contains(SearchValue.ToLower())).ToList();
+			ResultTags = ResultTags.Where(t => !Tags.Any(et => et.Id == t.Id)).ToList();
+			StateHasChanged();
+		}
+		catch
+		{
+			ModalErrorMessage = "An error occured while searching for tag.";
+		}
+	}
+
+	private async void AddTag(Tag Tag)
+	{
+		try
+		{
+			_FileRepository.AddTagForFile(iFileId, (int)Tag.Id);
+			Tags.Add(Tag);
+			await _RecentFilesRepository.AddRecentFile(RecentFile);
+			SearchTag();
+		}
+		catch
+		{
+			ModalErrorMessage = "An error occured while adding tag.";
+		}
+	}
+
+	private async void DeleteTag(Tag Tag)
+	{
+		try
+		{
+			_FileRepository.RemoveTagForFile(iFileId, (int)Tag.Id);
+			Tags.Remove(Tag);
+			await _RecentFilesRepository.AddRecentFile(RecentFile);
+			SearchTag();
+		}
+		catch
+		{
+			ModalErrorMessage = "An error occured while deleting tag.";
+		}
+	}
+
+	private async void UpatePsuedoname()
+	{
+		try
+		{
+			if (Psuedoname is null)
+			{
+				return;
+			}
+
+			if (String.IsNullOrWhiteSpace(Psuedoname.Value))
+			{
+				if (Psuedoname.Id != 0) //Deletes Psuedoname from database
+				{
+					_FileInformationRepository.DeleteFileInformation((int)Psuedoname.Id);
+				}
+
+				Name = File.Name;
+				OriginalName = null;
+			}
+			else
+			{
+				if (Psuedoname.Id != 0) //Updates Psuedoname
+				{
+					_FileInformationRepository.EditFileInformation(Psuedoname);
+				}
+				else //Adds psuedoname
+				{
+					_FileInformationRepository.AddFileInformation(Psuedoname);
+				}
+
+				Name = Psuedoname.Value;
+				OriginalName = File.Name;
+			}
+
+			RecentFile.Name = Name;
+			await _RecentFilesRepository.AddRecentFile(RecentFile);
+		}
+		catch
+		{
+			
+		}
 	}
 }

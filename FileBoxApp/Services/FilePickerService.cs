@@ -15,7 +15,7 @@ namespace FileBoxApp.Services
 				}
 				return result.FullPath;
 			}
-			catch (Exception ex)
+			catch
 			{
 				return "";
 			}
