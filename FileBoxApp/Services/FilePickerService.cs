@@ -20,5 +20,21 @@ namespace FileBoxApp.Services
 				return "";
 			}
 		}
+
+		public async Task<List<string>> PickMultiFilesAsync()
+		{
+			try
+			{
+				IEnumerable<FileResult> result = await FilePicker.PickMultipleAsync();
+
+				List<string> files = result.Select(r => r.FullPath).ToList();
+
+				return files;
+			}
+			catch
+			{
+				return new List<string>();
+			}
+		}
 	}
 }

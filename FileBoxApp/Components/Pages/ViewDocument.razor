@@ -134,8 +134,6 @@
 			}
 			else
 			{
-				await _RecentFilesRepository.AddRecentFile(new RecentFile() { Id = (int)File.Id, Name = File.Name, Accessed = DateTime.Now, Tags = new List<Tag>() });
-
 				await docViewer.LoadFile(File, Paths);
 			}
 

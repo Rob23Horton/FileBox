@@ -6,6 +6,7 @@
 
 <h1>Document</h1>
 
+<button class="btn btn-primary" @onclick="@(() => SelectMultipleFiles())">Select Multiple Files</button>
 <button class="btn btn-primary" @onclick="SelectFile">Select File</button>
 
 @if (File is not null)
@@ -18,6 +19,30 @@
 
 <DocumentViewer @ref="documentViewer"></DocumentViewer>
 
+<Modal @ref="multipleFilesModal">
+	<Title>Add multiple files</Title>
+	<Body>
+		@if (skippedFiles.Count() > 0)
+		{
+			@foreach (KeyValuePair<string, string> skippedFile in skippedFiles)
+			{
+				<p>@skippedFile.Key - @skippedFile.Value</p>
+			}
+		}
+		else
+		{
+			<p>You have selected @files.Count() file(s)</p>
+		}
+	</Body>
+	<Footer>
+		@if (files.Count() > 0)
+		{
+			<button type="button" class="btn btn-success" @onclick="@(() => AddMultipleFiles())">Add</button>
+		}
+		<button type="button" class="btn btn-danger" @onclick="@(() => multipleFilesModal.Close())">Close</button>
+	</Footer>
+</Modal>
+
 @code
 {
 	private FileBoxFile File { get; set;}
@@ -26,6 +51,10 @@
 	private string ErrorMessage { get; set; }
 
 	private DocumentViewer documentViewer { get; set; }
+
+	private Modal multipleFilesModal { get; set; }
+	private List<string> files { get; set; } = new List<string>();
+	private Dictionary<string, string> skippedFiles { get; set; } = new Dictionary<string, string>();
 
 	private async void SelectFile()
 	{
@@ -38,15 +67,7 @@
 				return;
 			}
 
-			FileInfo fileInfo = new FileInfo(filePath);
-
-			File = new FileBoxFile()
-				{
-					Name = fileInfo.Name.Remove(fileInfo.Name.LastIndexOf("."), fileInfo.Extension.Length),
-					Created = fileInfo.CreationTime,
-					Type = fileInfo.Extension.Replace(".", "")
-				};
-			Path = new FileBoxPath() { DeviceName = DeviceInfo.Name, CurrentlyActive = true, FilePath = $"{fileInfo.DirectoryName.Replace("\\", "/")}/" };
+			CreateFileObject(filePath);
 
 			await documentViewer.LoadFile(File, new List<FileBoxPath>() { Path }, false);
 
@@ -58,6 +79,19 @@
 		}
 	}
 
+	private void CreateFileObject(string FilePath)
+	{
+		FileInfo fileInfo = new FileInfo(FilePath);
+
+		File = new FileBoxFile()
+			{
+				Name = fileInfo.Name.Remove(fileInfo.Name.LastIndexOf("."), fileInfo.Extension.Length),
+				Created = fileInfo.CreationTime,
+				Type = fileInfo.Extension.Replace(".", "")
+			};
+		Path = new FileBoxPath() { DeviceName = DeviceInfo.Name, CurrentlyActive = true, FilePath = $"{fileInfo.DirectoryName.Replace("\\", "/")}/" };
+	}
+
 	private async Task AddFiles()
 	{
 		try
@@ -66,8 +100,6 @@
 			ErrorMessage = "File has already been added.";
 			StateHasChanged();
 			return;
-
-			//TODO - If file already exists then check if path also already exists (if not then add it)
 		}
 		catch
 		{
@@ -97,5 +129,69 @@
 	{
 		documentViewer.SetUserMessage("");
 		documentViewer.ClearImage();
+	}
+
+	private async Task SelectMultipleFiles()
+	{
+		try
+		{
+			files = await _FilePickerService.PickMultiFilesAsync();
+			multipleFilesModal.Open();
+		}
+		catch
+		{
+
+		}
+	}
+
+	private void AddMultipleFiles()
+	{
+		skippedFiles = new Dictionary<string, string>();
+
+		foreach (string file in files)
+		{
+			try
+			{
+				CreateFileObject(file);
+
+				//Raw files aren't supported
+				if (File.Type.ToLower() == "arw")
+				{
+					skippedFiles.Add(File.Name, "Raw file type is not supported.");
+					continue;
+				}
+
+				//Skips if file exists
+				_FileRespository.GetFileId(File);
+				skippedFiles.Add(File.Name, "File already exists in database.");
+				continue;
+			}
+			catch
+			{
+
+			}
+
+			//Adds file
+			try
+			{
+				_FileRespository.AddFile(File.Clone());
+				File.Id = _FileRespository.GetFileId(File);
+
+				Path.FileCode = File.Id;
+				_PathRespository.AddPath(Path.Clone());
+
+			}
+			catch
+			{
+
+			}
+
+
+		}
+
+		File = new FileBoxFile();
+		Path = new FileBoxPath();
+
+		files = new List<string>();
 	}
 }
