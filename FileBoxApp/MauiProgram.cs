@@ -8,6 +8,7 @@ using FileBox.Interfaces;
 using FileBox.Repositories;
 
 using System;
+using CommunityToolkit.Maui;
 
 
 namespace FileBoxApp
@@ -22,6 +23,7 @@ namespace FileBoxApp
 			var builder = MauiApp.CreateBuilder();
 			builder
 				.UseMauiApp<App>()
+				.UseMauiCommunityToolkit()
 				.ConfigureFonts(fonts =>
 				{
 					fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
@@ -42,6 +44,7 @@ namespace FileBoxApp
 			builder.Services.AddSingleton<FilePickerService>();
 			builder.Services.AddScoped<IRecentFilesRepository, RecentFileRepository>();
 			builder.Services.AddScoped<ILocalFileSystemService, LocalFileSystemService>();
+			builder.Services.AddScoped<ISearchService, SearchService>();
 
 			builder.Services.AddScoped<IFileRepository, FileRepository>();
 			builder.Services.AddScoped<ITagRepository, TagRepository>();

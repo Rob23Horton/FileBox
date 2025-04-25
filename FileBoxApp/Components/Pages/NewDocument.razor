@@ -89,7 +89,7 @@
 				Created = fileInfo.CreationTime,
 				Type = fileInfo.Extension.Replace(".", "")
 			};
-		Path = new FileBoxPath() { DeviceName = DeviceInfo.Name, CurrentlyActive = true, FilePath = $"{fileInfo.DirectoryName.Replace("\\", "/")}/" };
+		Path = new FileBoxPath() { DeviceName = DeviceInfo.Name, CurrentlyActive = true, FilePath = $"{fileInfo.DirectoryName?.Replace("\\", "/")}/" };
 	}
 
 	private async Task AddFiles()
@@ -157,13 +157,13 @@
 				//Raw files aren't supported
 				if (File.Type.ToLower() == "arw")
 				{
-					skippedFiles.Add(File.Name, "Raw file type is not supported.");
+					skippedFiles.Add($"{File.Name}.{File.Type}", "Raw file type is not supported.");
 					continue;
 				}
 
 				//Skips if file exists
 				_FileRespository.GetFileId(File);
-				skippedFiles.Add(File.Name, "File already exists in database.");
+				skippedFiles.Add($"{File.Name}.{File.Type}", "File already exists in database.");
 				continue;
 			}
 			catch

@@ -1,44 +1,166 @@
 ﻿@page "/settings"
 
+@inject ISearchService _SearchService;
+@inject FilePickerService _FilePickerService;
+
 @inject IFileRepository _FileRepository;
 @inject IPathRepository _PathRespository;
 
 <h1>Settings</h1>
 
 <div class="d-flex flex-column">
-    <h2>Database Settings</h2>
-    <button type="button" class="btn btn-danger" @onclick="ClearFilesAndPaths">Delete all files and paths</button>
+	<h2>Database Settings</h2>
+	<button type="button" class="btn btn-danger" @onclick="ClearFilesAndPaths">Delete all files and paths</button>
 </div>
 
+<div class="d-flex flex-column">
+	<h2>Folders</h2>
+	<button type="button" class="btn btn-primary mb-3" @onclick="@(() => SearchFolderModal.Open())">Change Folders</button>
+	<button type="button" class="btn btn-success mb-3" @onclick="@(() => SearchAllFolders())">Search Folders</button>
+	<p>@SearchMessage</p>
+</div>
 
+<Modal @ref="@SearchFolderModal">
+	<Title>Search Folders</Title>
+	<Body>
+		<table class="w-100">
+			<tr>
+				<th>Name</th>
+				<th>Path</th>
+				<th>Delete</th>
+			</tr>
+			@foreach (SearchFolder folder in SearchFolders)
+			{
+				<tr>
+					<td><InputText class="form-control" @bind-Value="@folder.Name" @bind-Value:after="@(() => UpdateSearchFolders())"></InputText></td>
+					<td><p>@folder.Path</p></td>
+					<td><button type="button" class="btn btn-danger" @onclick="@(() => DeleteSearchFolder(folder))">Delete</button></td>
+				</tr>
+			}
+		</table>
+		<button type="button" class="btn btn-success w-100" @onclick="@(() => AddSearchFolder())">Add Folder</button>
+	</Body>
+	<Footer>
+		<button type="button" class="btn btn-danger" @onclick="@(() => SearchFolderModal.Close())">Close</button>
+	</Footer>
+</Modal>
 
 @code
 {
 
-    private void ClearFilesAndPaths()
-    {
-        try
-        {
-            List<FileBoxFile> files = _FileRepository.GetAllFiles();
+	private Modal SearchFolderModal { get; set; }
+	private List<SearchFolder> SearchFolders { get; set; } = new List<SearchFolder>();
+	private string SearchMessage { get; set; } = String.Empty;
 
-            foreach (FileBoxFile file in files)
-            {
-                List<FileBoxPath> paths = _PathRespository.GetAllPathsFromFileCode((int)file.Id);
+	protected override async Task OnInitializedAsync()
+	{
+		try
+		{
+			SearchFolders = await _SearchService.GetAllSearchFolders();
+		}
+		catch
+		{
 
-                foreach (FileBoxPath path in paths)
-                {
-                    _PathRespository.RemovePath((int)path.Id);
-                }
+		}
 
-                //TODO - delete all tags for file
+		await base.OnInitializedAsync();
+	}
 
-                _FileRepository.DeleteFile((int)file.Id);
-            }
-        }
-        catch
-        {
-            
-        }
-    }
+	private void ClearFilesAndPaths()
+	{
+		try
+		{
+			List<FileBoxFile> files = _FileRepository.GetAllFiles();
+
+			foreach (FileBoxFile file in files)
+			{
+				List<FileBoxPath> paths = _PathRespository.GetAllPathsFromFileCode((int)file.Id);
+
+				foreach (FileBoxPath path in paths)
+				{
+					_PathRespository.RemovePath((int)path.Id);
+				}
+
+				//TODO - delete all tags for file
+
+				_FileRepository.DeleteFile((int)file.Id);
+			}
+		}
+		catch
+		{
+
+		}
+	}
+
+	private async Task AddSearchFolder()
+	{
+		SearchFolder newFolder = new SearchFolder();
+
+		newFolder.Path = await _FilePickerService.PickFolder();
+
+		SearchFolders.Add(newFolder);
+
+		await UpdateSearchFolders();
+	}
+
+	private async Task UpdateSearchFolders()
+	{
+		await _SearchService.UpdateSearchFolders(SearchFolders);
+	}
+
+	private async Task DeleteSearchFolder(SearchFolder SearchFolder)
+	{
+		SearchFolders.Remove(SearchFolder);
+
+		await UpdateSearchFolders();
+	}
+
+	private async Task SearchAllFolders()
+	{
+		SearchMessage = "Starting Search";
+
+		List<FileInfo> folderFiles = await _SearchService.SearchFolders();
+
+		SearchMessage = "Getting all files.";
+		await InvokeAsync(() => StateHasChanged());
+
+		List<FileBoxFile> files = _FileRepository.GetAllFiles();
+
+		foreach (FileBoxFile file in files)
+		{
+			SearchMessage = $"Checking File {files.IndexOf(file)} out of {files.Count()}";
+			await InvokeAsync(() => StateHasChanged());
+
+			//Gets the folder files that maps to the file or skips file
+			List<FileInfo> folderFile = folderFiles.Where(ff => ff.Name == $"{file.Name}.{file.Type}").ToList();
+			if (folderFile.Count() == 0)
+			{
+				continue;
+			}
+
+			List<FileBoxPath> paths = _PathRespository.GetAllPathsFromFileCode((int)file.Id);
+
+			//Removes folder paths that already exist
+			folderFile.RemoveAll(ff => paths.Where(p => string.Equals($"{ff.DirectoryName?.Replace("\\", "/")}/", p.FilePath, StringComparison.OrdinalIgnoreCase)).Count() > 0);
+
+			//Adds the new paths
+			foreach (FileInfo newPath in folderFile)
+			{
+				FileBoxPath Path = new FileBoxPath()
+				{
+					FileCode = file.Id,
+					DeviceName = DeviceInfo.Name,
+					CurrentlyActive = true,
+					FilePath = $"{newPath.DirectoryName?.Replace("\\", "/")}/"
+				};
+
+				_PathRespository.AddPath(Path.Clone());
+			}
+
+		}
+
+		SearchMessage = "Finished";
+
+	}
 
 }

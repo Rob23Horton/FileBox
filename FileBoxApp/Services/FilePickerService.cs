@@ -1,4 +1,5 @@
-﻿using Microsoft.Maui.Storage;
+﻿using CommunityToolkit.Maui.Storage;
+using Microsoft.Maui.Storage;
 
 namespace FileBoxApp.Services
 {
@@ -34,6 +35,25 @@ namespace FileBoxApp.Services
 			catch
 			{
 				return new List<string>();
+			}
+		}
+
+		public async Task<string> PickFolder()
+		{
+			try
+			{
+				FolderPickerResult folder = await FolderPicker.PickAsync("");
+
+				if (!folder.IsSuccessful)
+				{
+					return String.Empty;
+				}
+
+				return folder.Folder.Path;
+			}
+			catch
+			{
+				return String.Empty;
 			}
 		}
 	}
