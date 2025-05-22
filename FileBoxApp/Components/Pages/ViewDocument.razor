@@ -5,6 +5,7 @@
 @inject IPathRepository _PathRespository;
 @inject ITagRepository _TagRepository;
 @inject IFileInformationRepository _FileInformationRepository;
+@inject MetaDataService _MetadataService;
 
 
 <div class="d-flex flex-row">
@@ -69,7 +70,24 @@
 		</div>
 		<hr />
 		<div>
-			TODO
+			<button type="button" class="btn btn-primary" @onclick="LoadFileInformation">Load Metadata</button>
+
+			<table class="w-100">
+				<tr>
+					<th>Name</th>
+					<th>Value</th>
+					<th>Delete</th>
+				</tr>
+
+				@foreach (InfoValue info in Information.Where(i => i.ValueName.ToLower() != "psuedoname"))
+				{
+					<tr>
+						<td>@info.ValueName</td>
+						<td>@info.Value</td>
+						<td><button type="button" class="btn btn-danger" @onclick="@(() => DeleteInfo(info))">Delete</button></td>
+					</tr>
+				}
+			</table>
 		</div>
 	</Body>
 	<Footer>
@@ -281,7 +299,54 @@
 		}
 		catch
 		{
-			
+
+		}
+	}
+
+	private void LoadFileInformation()
+	{
+		try
+		{
+			List<InfoValue> existingMetadata = Information.ToList();
+
+			foreach (FileBoxPath path in Paths.Where(p => p.CurrentlyActive == true))
+			{
+
+				string filePath = $"{path.FilePath}{File.Name}.{File.Type}";
+
+				List<InfoValue> pathInformation = _MetadataService.GetMetaDataForFile(filePath);
+
+				pathInformation.ForEach(i => i.FileCode = File.Id);
+
+				Information.AddRange(pathInformation);
+			}
+
+			foreach (InfoValue fileInfo in Information)
+			{
+				if (existingMetadata.Contains(fileInfo))
+				{
+					continue;
+				}
+
+				_FileInformationRepository.AddFileInformation(fileInfo);
+			}
+
+		}
+		catch
+		{
+
+		}
+	}
+
+	private void DeleteInfo(InfoValue Info)
+	{
+		try
+		{
+			Information.Remove(Info);
+			_FileInformationRepository.DeleteFileInformation((int)Info.Id);
+		}
+		catch
+		{	
 		}
 	}
 }
