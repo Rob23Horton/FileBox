@@ -45,6 +45,7 @@ namespace FileBoxApp
 			builder.Services.AddScoped<IRecentFilesRepository, RecentFileRepository>();
 			builder.Services.AddScoped<ILocalFileSystemService, LocalFileSystemService>();
 			builder.Services.AddScoped<ISearchService, SearchService>();
+			builder.Services.AddScoped<MetaDataService>();
 
 			builder.Services.AddScoped<IFileRepository, FileRepository>();
 			builder.Services.AddScoped<ITagRepository, TagRepository>();
