@@ -61,12 +61,24 @@ namespace FileBox.Repositories
 			_databaseConnector.Delete<FileBoxFile>(new FileBoxFile() {Id = Id});
 		}
 
-		public List<FileTag> GetTagsForFile(int FileId)
+		public List<Tag> GetTagsForFile(int FileId)
 		{
 			Select select = new Select();
 			select.AddWhere("FileCode", FileId);
 
-			return _databaseConnector.Select<FileTag>(select);
+			List<FileTag> FileTags = _databaseConnector.Select<FileTag>(select);
+
+			List<Tag> Tags = new List<Tag>();
+
+			foreach (FileTag tag in FileTags)
+			{
+				Select tagSelect = new Select();
+				tagSelect.AddWhere("TagId", tag.TagCode);
+
+				Tags.AddRange(_databaseConnector.Select<Tag>(tagSelect));
+			}
+
+			return Tags;
 		}
 
 		public void AddTagForFile(int FileId, int TagCode)
@@ -74,7 +86,6 @@ namespace FileBox.Repositories
 			FileTag newTag = new FileTag();
 			newTag.FileCode = FileId;
 			newTag.TagCode = TagCode;
-			newTag.CurrentlyActive = true;
 
 			_databaseConnector.Insert<FileTag>(newTag);
 		}
@@ -94,6 +105,22 @@ namespace FileBox.Repositories
 
 			//Delete the tag
 			_databaseConnector.Delete<FileTag>(fileTags[0]);
+		}
+
+		public int GetFileId(FileBoxFile File)
+		{
+			Select select = new Select();
+			select.AddWhere("Name", File.Name);
+			select.AddWhere("Type", File.Type);
+
+			List<FileBoxFile> files = _databaseConnector.Select<FileBoxFile>(select);
+
+			if (files.Count() == 0)
+			{
+				throw new Exception($"File wasn't found for {File.Name}.{File.Type}.");
+			}
+
+			return (int)files[0].Id;
 		}
 	}
 }

@@ -1,0 +1,14 @@
+﻿
+<div class="d-flex flex-row flex-wrap">
+	@foreach (Tag tag in Tags)
+	{
+		<p class="tag alert alert-success" style="padding: 3px;">@tag.Name</p>
+	}
+</div>
+
+@code
+{
+	[Parameter]
+	public List<Tag> Tags { get; set; }
+
+}

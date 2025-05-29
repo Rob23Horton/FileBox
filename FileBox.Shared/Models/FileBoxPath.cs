@@ -10,6 +10,11 @@ namespace FileBox.Shared.Models
 	[Table("tblPath")]
 	public class FileBoxPath
 	{
+		public FileBoxPath Clone()
+		{
+			return new FileBoxPath() { Id = Id, FileCode = FileCode, DeviceName = DeviceName, FilePath = FilePath, CurrentlyActive = CurrentlyActive };
+		}
+
 		[NameCast("PathId")]
 		[PropertyType("INTEGER", true)]
 		public long Id { get; set; }

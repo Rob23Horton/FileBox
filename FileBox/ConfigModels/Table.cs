@@ -9,6 +9,6 @@ namespace FileBox.ConfigModels
 	internal class Table
 	{
 		public string Name { get; set; }
-		public string CreatorClass { get; set; }
+		public Type Type { get; set; }
 	}
 }

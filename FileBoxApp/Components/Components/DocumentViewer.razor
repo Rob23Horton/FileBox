@@ -1,0 +1,221 @@
+﻿
+@inject ILocalFileSystemService _FileSystem;
+@inject IPathRepository _PathRespository;
+
+@if (!String.IsNullOrWhiteSpace(FileData))
+{
+	<div>
+		@if (IsImage)
+		{
+			<select class="form-control" style="margin-bottom: 10px" @onchange="UpdateImageStyle">
+				<option value="width">Width</option>
+				<option value="height">Height</option>
+			</select>
+			<img src="@FileData" style="@((MarkupString)ImageStyle)" />
+		}
+		else if (IsText)
+		{
+			@((MarkupString)FileData)
+		}
+		else if (IsAudio)
+		{
+			<audio controls src="@FileData" style="width: 100%" />
+		}
+		else if (IsVideo)
+		{
+			<video controls src="@FileData" style="width: 100%"></video>
+		}
+		else
+		{
+			<div style="overflow-y:hidden">
+				<embed src="@FileData" type="@((MarkupString)EmbededType)" frameBorder="0" scrolling="auto" style="width:100%;height:90vh" />
+			</div>
+		}
+	</div>
+}
+
+<p>@((MarkupString)UserMessage)</p>
+
+
+@code
+{
+	private string UserMessage { get; set; } = String.Empty;
+
+	private bool IsImage { get; set; }
+	private bool IsText { get; set; }
+	private bool IsAudio { get; set; }
+	private bool IsVideo { get; set; }
+
+	private string ImageStyle { get; set; } = String.Empty;
+	private string EmbededType { get; set; } = String.Empty;
+	private string FileData { get; set; } = String.Empty;
+
+	private bool IsNotImage(FileBoxFile File)
+	{
+		switch (File.Type.ToLower())
+		{
+			case "pdf":
+				return true;
+
+			case "mp4":
+				return true;
+
+			case "mp3":
+				return true;
+
+			case "txt":
+				return true;
+		}
+
+		return false;
+	}
+
+	public async Task LoadFile(FileBoxFile File, List<FileBoxPath> Paths, bool UpdatePaths = true)
+	{
+		try
+		{
+			FileData = String.Empty;
+			UserMessage = "Loading...";
+			StateHasChanged();
+
+			IsImage = !IsNotImage(File);
+
+			//Checks all the file paths to see if they exist on the current device
+			foreach (FileBoxPath path in Paths)
+			{
+				bool WasActive = path.CurrentlyActive;
+
+				UserMessage = $"Check file exists - Path {Paths.IndexOf(path) + 1}/{Paths.Count()}";
+				StateHasChanged();
+
+				path.CurrentlyActive = _FileSystem.FileExists(File, path);
+
+				//Updates path to be current
+				if (UpdatePaths && WasActive != path.CurrentlyActive) //This had to be added otherwise it would change all the paths when showing a path that isn't in the db
+				{
+					_PathRespository.EditPath(path);
+				}
+			}
+
+			byte[] data = new byte[0];
+
+			string ImageType = File.Type;
+
+			UserMessage = $"Opening file.";
+			StateHasChanged();
+
+			//Gets data from the paths where the file exists
+			foreach (FileBoxPath Path in Paths.Where(p => p.CurrentlyActive == true).ToList().OrderBy(p => p.CurrentlyActive).ToList())
+			{
+				if (File.Type.ToLower() == "txt")
+				{
+					FileData = await _FileSystem.GetTextFile(File, Path);
+				}
+				else if (IsImage && _FileSystem.GetByteSize(File, Path) > 20_000_000)//If file is too big (Image)
+				{
+					data = await _FileSystem.GetJPGFile(File, Path); //Loads image as jpg (Cuz yk compression)
+					ImageType = "jpg";
+				}
+				else
+				{
+					data = await _FileSystem.GetFile(File, Path);
+				}
+
+				if (data.Length == 0 && FileData.Length == 0) //File couldn't be loaded
+				{
+					//Updates path to not be active
+					Path.CurrentlyActive = false;
+					if (UpdatePaths)
+					{
+						_PathRespository.EditPath(Path);
+					}
+					continue;
+				}
+
+				break;
+			}
+
+			//Returns if no data
+			if (data.Length == 0 && FileData.Length == 0)
+			{
+				UserMessage = "File not found.";
+				StateHasChanged();
+				return;
+			}
+
+			//When image
+			if (IsImage)
+			{
+				ImageStyle = "width: 100%";
+				FileData = $"data:{ImageType};base64,{Convert.ToBase64String(data)}";
+				UserMessage = "";
+
+				StateHasChanged();
+				return;
+			}
+
+			UserMessage = "";
+
+			//When not an image
+			switch (File.Type.ToLower())
+			{
+				case "pdf":
+					FileData = $"data:application/{File.Type};base64,{Convert.ToBase64String(data)}";
+					EmbededType = "application/pdf";
+					break;
+
+				case "mp4":
+					FileData = $"data:video/mp4;base64,{Convert.ToBase64String(data)}";
+					EmbededType = "video/mp4";
+					IsVideo = true;
+					break;
+
+				case "mp3":
+					FileData = $"data:audio/mpeg;base64,{Convert.ToBase64String(data)}";
+					EmbededType = "audio/mpeg";
+					IsAudio = true;
+					break;
+
+				case "txt":
+					IsText = true;
+					break;
+
+				default:
+					UserMessage = "File type is not supported.";
+					break;
+			}
+
+			StateHasChanged();
+		}
+		catch (Exception e)
+		{
+			Console.WriteLine(e.ToString());
+		}
+	}
+
+	public void UpdateImageStyle(ChangeEventArgs e)
+	{
+		if ((string)e.Value == "width")
+		{
+			ImageStyle = "width: 100%";
+		}
+		else
+		{
+			ImageStyle = "height: 99vh";
+		}
+		StateHasChanged();
+	}
+
+	public void SetUserMessage(string text)
+	{
+		UserMessage = text;
+		StateHasChanged();
+	}
+
+	public void ClearImage()
+	{
+		FileData = String.Empty;
+		StateHasChanged();
+	}
+
+}

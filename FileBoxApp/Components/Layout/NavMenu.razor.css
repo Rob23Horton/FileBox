@@ -1,0 +1,105 @@
+.top-row {
+    height: 3.5rem;
+    background-color: rgba(0,0,0,0.4);
+}
+
+.navbar-brand {
+    font-size: 1.1rem;
+}
+
+.bi {
+    display: inline-block;
+    position: relative;
+    width: 1.25rem;
+    height: 1.25rem;
+    top: -1px;
+    background-size: cover;
+}
+
+.nav-item {
+    font-size: 0.9rem;
+    padding-bottom: 0.5rem;
+}
+
+    .nav-item:first-of-type {
+        padding-top: 1rem;
+    }
+
+    .nav-item:last-of-type {
+        padding-bottom: 1rem;
+    }
+
+    .nav-item ::deep a {
+        color: #d7d7d7;
+        border-radius: 4px;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        line-height: 3rem;
+    }
+
+        .nav-item ::deep a.active {
+            background-color: rgba(255,255,255,0.37);
+            color: white;
+        }
+
+        .nav-item ::deep a:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+.nav-settings{
+    position: fixed;
+    bottom: 0px;
+}
+
+    .nav-settings ::deep svg {
+        transition: transform ease-in-out 1s;
+    }
+
+.nav-settings:hover ::deep svg{
+    transform: rotate(-110deg);
+}
+
+nav{
+    display: flex;
+    flex-direction: column;
+}
+
+.nav-scrollable {
+    display: block;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+
+@media (max-width: 600px)
+{
+    .nav-settings{
+        position: unset;
+    }
+
+    .nav-scrollable{
+        height: auto;
+        justify-self: center;
+    }
+
+    nav{
+        flex-direction: row !important;
+    }
+
+    .nav-item {
+        padding-right: 5px !important;
+        padding-left: 5px !important;
+    }
+
+    .nav-item:first-of-type {
+        padding-top: 0px;
+    }
+
+    .nav-item:last-of-type {
+        padding-bottom: 0px;
+    }
+
+
+}

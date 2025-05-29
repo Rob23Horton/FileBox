@@ -1,0 +1,145 @@
+﻿@page "/tags"
+
+@inject ITagRepository _TagRepository;
+
+<div class="d-flex flex-row top-container">
+	<h1>Tags</h1>
+
+	<button type="button" class="btn btn-success" @onclick="@(() => {NewModal.Open();})">Create Tag</button>
+</div>
+
+<table>
+	<tr>
+		<th class="tag-name">Name</th>
+		<th class="tag-using-no">No of Files</th>
+		<th class="tag-edit tag-edit-heading">Edit</th>
+	</tr>
+
+	@foreach (Tag tag in AllTags.OrderBy(t => t.Name))
+	{
+		<tr>
+			<td class="tag-name">@tag.Name</td>
+			<td class="tag-using-no">@((MarkupString)TagFiles[tag.Id].ToString())</td>
+			<td class="tag-edit"><button type="button" class="btn btn-primary" @onclick="@(() => {CurrentTag = tag.Clone(); EditModal.Open();})">Edit</button></td>
+		</tr>
+	}
+</table>
+
+<Modal @ref="EditModal">
+	<Title>Edit Tag</Title>
+	<Body>
+		<div class="d-flex flex-column">
+			<div class="w-100 bttm-margin">
+				<InputText class="w-100" placeholder="Tag Name (Max 48 chars)" maxlength="48" @bind-Value="@CurrentTag.Name" />
+			</div>
+			<div>
+				<label>@EditErrorMessage</label>
+			</div>
+		</div>
+	</Body>
+	<Footer>
+		<div>
+			<button type="button" class="btn btn-success" @onclick="EditTag">Update</button>
+			<button type="button" class="btn btn-warning" @onclick="DeleteTag">Delete</button>
+			<button type="button" class="btn btn-danger" data-dismiss="modal" @onclick="@(() => EditModal.Close())">Cancel</button>
+		</div>
+	</Footer>
+</Modal>
+
+<Modal @ref="NewModal">
+	<Title>Create Tag</Title>
+	<Body>
+		<div class="d-flex flex-column">
+			<div class="w-100 bttm-margin">
+				<InputText class="w-100" placeholder="Tag Name (Max 48 chars)" maxlength="48" @bind-Value="@NewTag.Name" />
+			</div>
+			<div>
+				<label>@NewErrorMessage</label>
+			</div>
+		</div>
+	</Body>
+	<Footer>
+		<div>
+			<button type="button" class="btn btn-success" @onclick="AddTag">Create</button>
+			<button type="button" class="btn btn-danger" data-dismiss="modal" @onclick="@(() => {NewTag = new Tag(); NewModal.Close();})">Cancel</button>
+		</div>
+	</Footer>
+</Modal>
+
+@code
+{
+	private List<Tag> AllTags { get; set; }
+	private Dictionary<long, int> TagFiles { get; set; } = new Dictionary<long, int>();
+
+	private Modal EditModal { get; set; }
+	private string EditErrorMessage { get; set; } = String.Empty;
+	private Tag CurrentTag { get; set; } = new Tag();
+
+	private Modal NewModal { get; set; }
+	private string NewErrorMessage { get; set; } = String.Empty;
+	private Tag NewTag { get; set; } = new Tag();
+
+	protected override void OnInitialized()
+	{
+		try
+		{
+			AllTags = _TagRepository.GetAllTags();
+
+			//Gets the number of files that use the tag
+			foreach (Tag tag in AllTags)
+			{
+				TagFiles.Add(tag.Id, _TagRepository.NoOfFiles((int)tag.Id));
+			}
+
+			StateHasChanged();
+		}
+		catch
+		{
+
+		}
+
+		base.OnInitialized();
+	}
+
+	private void EditTag()
+	{
+		NewErrorMessage = String.Empty;
+
+		_TagRepository.EditTag(CurrentTag);
+
+		AllTags = _TagRepository.GetAllTags();
+
+		EditModal.Close();
+		StateHasChanged();
+	}
+
+	private void DeleteTag()
+	{
+		_TagRepository.DeleteTag((int)CurrentTag.Id);
+
+		AllTags = _TagRepository.GetAllTags();
+
+		EditModal.Close();
+		StateHasChanged();
+	}
+
+	private void AddTag()
+	{
+		NewErrorMessage = String.Empty;
+
+		_TagRepository.AddTag(NewTag);
+		NewTag = new Tag();
+
+		AllTags = _TagRepository.GetAllTags();
+
+		//Gets the number of files that use the tag
+		TagFiles = new Dictionary<long, int>();
+		foreach (Tag tag in AllTags)
+		{
+			TagFiles.Add(tag.Id, _TagRepository.NoOfFiles((int)tag.Id));
+		}
+
+		NewModal.Close();
+		StateHasChanged();
+	}
+}

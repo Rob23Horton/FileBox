@@ -10,6 +10,7 @@ namespace FileBox.Interfaces
 	public interface IFileRepository
 	{
 		public FileBoxFile GetFileById(int Id);
+		public int GetFileId(FileBoxFile File);
 		public List<FileBoxFile> GetAllFiles();
 		public List<FileBoxFile> GetFilesLikeName(string Name);
 
@@ -17,7 +18,7 @@ namespace FileBox.Interfaces
 		public void EditFile(FileBoxFile File);
 		public void DeleteFile(int Id);
 
-		public List<FileTag> GetTagsForFile(int FileId);
+		public List<Tag> GetTagsForFile(int FileId);
 		public void AddTagForFile(int FileId, int TagCode);
 		public void RemoveTagForFile(int FileId, int TagCode);
 	}

@@ -5,6 +5,11 @@ namespace FileBox.Shared.Models
 	[Table("tblFile")]
 	public class FileBoxFile
 	{
+		public FileBoxFile Clone()
+		{
+			return new FileBoxFile() {  Id = Id, Name = Name, Created = Created, Type = Type };
+		}
+
 		[NameCast("FileId")]
 		[PropertyType("INTEGER", true)]
 		public long Id { get; set; }

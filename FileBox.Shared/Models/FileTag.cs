@@ -14,7 +14,5 @@ namespace FileBox.Shared.Models
 
 		[PropertyType("INTEGER")]
 		public long TagCode {  get; set; }
-
-		public bool CurrentlyActive { get; set; }
 	}
 }

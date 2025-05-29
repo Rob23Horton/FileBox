@@ -25,7 +25,17 @@ namespace FileBox.Repositories
 
 		public void DeleteTag(int Id)
 		{
-			_databaseConnector.Delete<Tag>(new Tag { Id = Id });
+			_databaseConnector.Delete(new Tag { Id = Id });
+
+			//Deletes all the files that have this tag
+			Select TagSelect = new Select();
+			TagSelect.AddWhere("TagCode", Id);
+
+			List<FileTag> FilesWithTag = _databaseConnector.Select<FileTag>(TagSelect);
+			foreach (FileTag fileTag in FilesWithTag)
+			{
+				_databaseConnector.Delete(fileTag);
+			}
 		}
 
 		public void EditTag(Tag tag)
@@ -63,6 +73,16 @@ namespace FileBox.Repositories
 			}
 
 			return Tags[0];
+		}
+
+		public int NoOfFiles(int Id)
+		{
+			Select TagSelect = new Select();
+			TagSelect.AddWhere("TagCode", Id);
+
+			List<FileTag> FilesWithTag = _databaseConnector.Select<FileTag>(TagSelect);
+
+			return FilesWithTag.Count();
 		}
 	}
 }

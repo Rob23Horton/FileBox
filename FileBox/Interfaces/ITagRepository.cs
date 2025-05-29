@@ -15,5 +15,6 @@ namespace FileBox.Interfaces
 		public void AddTag(Tag tag);
 		public void EditTag(Tag tag);
 		public void DeleteTag(int Id);
+		public int NoOfFiles(int Id);
 	}
 }
