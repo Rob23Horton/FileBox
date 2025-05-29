@@ -131,8 +131,8 @@
 			SearchMessage = $"Checking File {files.IndexOf(file)} out of {files.Count()}";
 			await InvokeAsync(() => StateHasChanged());
 
-			//Gets the folder files that maps to the file or skips file
-			List<FileInfo> folderFile = folderFiles.Where(ff => ff.Name == $"{file.Name}.{file.Type}").ToList();
+			//Gets the folder files that maps to the file by name and created date or skips file
+			List<FileInfo> folderFile = folderFiles.Where(ff => ff.Name == $"{file.Name}.{file.Type}" && ff.LastWriteTime == file.Created).ToList();
 			if (folderFile.Count() == 0)
 			{
 				continue;
