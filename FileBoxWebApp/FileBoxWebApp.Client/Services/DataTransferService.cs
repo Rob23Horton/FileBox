@@ -1,4 +1,6 @@
 ﻿using FileBox.Shared.Models;
+using System.Diagnostics;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
@@ -10,7 +12,7 @@ namespace FileBoxWebApp.Client.Services
 		private readonly IUploadService _uploadService;
 		private bool _isRunning = false;
 		private int _maxFilesCount = 4;
-		private int _byteDataSize = 100_000;
+		private int _byteDataSize = 200_000;
 		private int _waitTime = 500;
 		public DataTransferService(HttpClient httpClient, IUploadService uploadService)
 		{
@@ -78,19 +80,20 @@ namespace FileBoxWebApp.Client.Services
 
 		}
 
-		private async Task<bool> StartFileUpload(UploadStatus File)
+		private async Task StartFileUpload(UploadStatus File)
 		{
 			//Tells server that new 
-			HttpResponseMessage response = await _httpClient.PostAsJsonAsync<FileBoxFile>($"api/Upload/Start", File.File);
+			HttpResponseMessage response = await _httpClient.PostAsJsonAsync<UploadStart>($"api/Upload/Start", new UploadStart() { Name = File.File.Name, Created = File.File.Created, Type = File.File.Type });
+			int? fileId = await response.Content.ReadFromJsonAsync<int>();
 
-			if (response is null || !response.IsSuccessStatusCode)
+			if (fileId is null)
 			{
-				return false;
+				return;
 			}
 
 			_uploadService.ChangeValue(File.Id, "Waiting", false);
-			_uploadService.ChangeId(File.Id, await response.Content.ReadFromJsonAsync<int>());
-			return true;
+			_uploadService.ChangeId(File.Id, (int)fileId);
+			return;
 		}
 
 		private async Task UploadStage(UploadStatus File)

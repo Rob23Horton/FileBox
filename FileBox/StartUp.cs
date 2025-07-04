@@ -11,11 +11,11 @@ namespace FileBox
 {
 	public static class FileBox
 	{
-		static public IDatabaseConnector StartUp(string? SqliteDirectiory)
+		static public DatabaseConnector.Services.DatabaseConnector StartUp(string? SqliteDirectiory)
 		{
 			DatabaseType DbType = GetDatabaseType();
 
-			DatabaseConnector.Services.IDatabaseConnector DatabaseConnector;
+			DatabaseConnector.Services.DatabaseConnector DatabaseConnector;
 
 			if (DbType == DatabaseType.MSqlite || DbType == DatabaseType.Sqlite) 
 			{

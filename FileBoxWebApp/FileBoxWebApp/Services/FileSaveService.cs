@@ -9,23 +9,30 @@ namespace FileBoxWebApp.Services
 {
 	public class FileSaveService : IFileSaveService
 	{
-		private List<FileSave> FileSaves = new List<FileSave>();
+		private List<FileSave> FileSaves { get; set; }
 		private IDatabaseConnector _connection;
 		public FileSaveService(IDatabaseConnector connection)
 		{
+			FileSaves = new List<FileSave>();
+			Console.WriteLine("AAAA");
 			_connection = connection;
+			Console.WriteLine(_connection.ToString());
+			Console.WriteLine("BBBBBB");
 		}
 
 		public int StartFileSave(FileBoxFile File)
 		{
+			Console.WriteLine(1);
 			FileSave newFile = new FileSave()
 			{
 				Id = FileSaves.Count() + 1 == int.MaxValue ? 0 : FileSaves.Count() + 1,
 				File = File.Clone()
 			};
+			Console.WriteLine(2);
 
 			FileSaves.Add(newFile);
 
+			Console.WriteLine(3);
 			return newFile.Id;
 		}
 
@@ -62,6 +69,8 @@ namespace FileBoxWebApp.Services
 			{
 				throw new Exception("Not all data has been transfered.");
 			}
+
+
 
 			//Add file to database
 			_connection.Insert<FileBoxFile>(file.File.Clone());

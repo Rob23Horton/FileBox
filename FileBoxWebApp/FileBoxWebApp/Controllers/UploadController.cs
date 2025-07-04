@@ -5,24 +5,24 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace FileBoxWebApp.Controllers
 {
-	[Route("api/[controller]")]
 	[ApiController]
+	[Route("api/Upload")]
 	public class UploadController : ControllerBase
 	{
 		private readonly IFileSaveService _saveService;
 		public UploadController(IFileSaveService saveService)
 		{
-			_saveService = saveService;
+			this._saveService = saveService;
 		}
 
 		[HttpPost("Start")]
-		[ProducesResponseType(200, Type = typeof(int))]
+		[ProducesResponseType(200, Type=typeof(int))]
 		[ProducesResponseType(400)]
-		public IActionResult Start([FromBody] FileBoxFile File)
+		public IActionResult Start(UploadStart File)
 		{
 			try
 			{
-				return Ok(_saveService.StartFileSave(File));
+				return Ok(_saveService.StartFileSave(new FileBoxFile() { Name = File.Name, Created = File.Created, Type = File.Type }));
 			}
 			catch
 			{
@@ -38,11 +38,11 @@ namespace FileBoxWebApp.Controllers
 			try
 			{
 				_saveService.AddDataToFile(Data);
-				return Ok(true);
+				return Ok();
 			}
 			catch
 			{
-				return BadRequest(false);
+				return BadRequest();
 			}
 		}
 
