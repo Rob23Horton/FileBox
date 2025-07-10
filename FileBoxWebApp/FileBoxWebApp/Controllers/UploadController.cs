@@ -1,4 +1,5 @@
 ﻿using FileBox.Shared.Models;
+using FileBoxWebApp.Models;
 using FileBoxWebApp.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -56,6 +57,26 @@ namespace FileBoxWebApp.Controllers
 				_saveService.SaveFile(File.Id, File.PathCode, File.TotalByteSize);
 				return Ok();
 			}
+			catch (NotAllDataUploadedException ex)
+			{
+				if (ex.MissingPackets.Count() == 0)
+				{
+					throw new Exception("There are no missing packets");
+				}
+
+				string json = $"[ {ex.MissingPackets.First()}";
+
+
+				foreach (int packet in ex.MissingPackets.Where(p => p != ex.MissingPackets.First()))
+				{
+					json = $"{json}, {packet}";
+				}
+
+				json = $"{json}]";
+
+				return BadRequest(json);
+			}
+
 			catch (Exception ex)
 			{
 				return BadRequest(ex.Message);

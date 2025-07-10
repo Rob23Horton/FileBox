@@ -10,6 +10,7 @@ namespace FileBox.Shared.Models
 	public class UploadStatus
 	{
 		public int Id { get; set; }
+		public int ServerId { get; set; }
 
 		public bool IsCancelled { get; set; }
 		public bool IsPaused { get; set; }
@@ -18,9 +19,9 @@ namespace FileBox.Shared.Models
 		public int Percentage { get; set; }
 
 		public int TotalDataLength { get; set; }
-		public List<byte> Data { get; set; }
 		public int CurrentDataIndex { get; set; } = 0;
 
 		public FileBoxFile File { get; set; }
+		public int FolderCode { get; set; }
 	}
 }

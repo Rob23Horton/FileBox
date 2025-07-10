@@ -1,12 +1,12 @@
+using DatabaseConnector.Models;
+using DatabaseConnector.Services;
 using FileBox.Interfaces;
 using FileBox.Repositories;
-using DatabaseConnector.Services;
 using FileBoxWebApp.Client.Pages;
 using FileBoxWebApp.Client.Services;
 using FileBoxWebApp.Components;
 using FileBoxWebApp.Services;
 using System.Data;
-using DatabaseConnector.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,7 +16,9 @@ builder.Services.AddRazorComponents()
 
 //Adds services that is used by the server
 builder.Services.AddSingleton<IDatabaseConnector, DatabaseConnector.Services.DatabaseConnector>(x => FileBox.FileBox.StartUp(null));
+builder.Services.AddSingleton<PathService>();
 builder.Services.AddSingleton<IFileSaveService, FileSaveService>();
+builder.Services.AddSingleton<FolderService>();
 
 //Adds services that is used by client
 builder.Services.AddScoped<HttpClient>();

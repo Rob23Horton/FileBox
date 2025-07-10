@@ -1,26 +1,47 @@
 ﻿using FileBox.Shared.Models;
+using Microsoft.JSInterop;
+using System;
+using System.IO;
 
 namespace FileBoxWebApp.Client.Services
 {
 	public class UploadService : IUploadService
 	{
+		private readonly IJSRuntime _JSRuntime;
+		public UploadService(IJSRuntime JSRuntime)
+		{
+			_JSRuntime = JSRuntime;
+		}
+
 		private List<UploadStatus> Files { get; set; } = new List<UploadStatus>();
 		private Dictionary<string, Action> Actions { get; set; } = new Dictionary<string, Action>();
 
-		public void AddUploadFile(FileBoxFile File, byte[] Data)
+		public async void AddUploadFile(FileBoxFile File, int FolderCode, byte[] Data, string Type)
 		{
+			//Creates the id for the new upload from either the next increment or 0
+			int id = 0;
+			UploadStatus? file = Files.OrderBy(f => f.Id).LastOrDefault();
+			if (file != null && file.Id < int.MaxValue)
+			{
+				id = file.Id + 1;
+			}
+
 			UploadStatus newUpload = new UploadStatus()
 			{
-				Id = Files.Count() == 0 ? 1 : Files.OrderBy(f => f.Id).Last().Id + 1,
+				Id = id,
 				Percentage = 0,
 				IsWaiting = true,
-				Data = Data.ToList(),
 				TotalDataLength = Data.Length,
 				File = File.Clone(),
+				FolderCode = FolderCode
 			};
 
 			Files.Add(newUpload);
 
+			//Adds data to IndexedDB
+			await _JSRuntime.InvokeVoidAsync("binaryDb.putFile", "FileDb", "files", $"{newUpload.Id}", Data, Type);
+
+			//Updates 
 			InvokeActions();
 		}
 
@@ -36,7 +57,7 @@ namespace FileBoxWebApp.Client.Services
 			}
 		}
 
-		public void ChangeId(int Id, int NewId)
+		public void SetServerId(int Id, int NewId)
 		{
 			UploadStatus? file = Files.Where(f => f.Id == Id).FirstOrDefault();
 
@@ -45,7 +66,7 @@ namespace FileBoxWebApp.Client.Services
 				return;
 			}
 
-			file.Id = NewId;
+			file.ServerId = NewId;
 		}
 		public void ChangeValue(int Id, string ValueName, bool NewValue)
 		{

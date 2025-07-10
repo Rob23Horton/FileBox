@@ -1,0 +1,15 @@
+﻿
+
+.item-link {
+	color: black;
+	width: fit-content;
+	max-width: 10%;
+	margin: 10px;
+}
+
+@media (max-width: 641px)
+{
+	.item-link{
+		margin: 30px !important;
+	}
+}

@@ -4,11 +4,11 @@ namespace FileBoxWebApp.Client.Services
 {
 	public interface IUploadService
 	{
-		public void AddUploadFile(FileBoxFile File, byte[] Data);
+		public void AddUploadFile(FileBoxFile File, int FolderCode, byte[] Data, string Type);
 		public List<UploadStatus> GetFilesUploading();
 		public void DeleteUploadFile(int Id);
 
-		public void ChangeId(int Id, int NewId);
+		public void SetServerId(int Id, int NewId);
 		public void ChangeValue(int Id, string ValueName, bool NewValue);
 		public void IncrementDataIndex(int Id);
 

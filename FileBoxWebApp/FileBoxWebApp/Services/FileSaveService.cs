@@ -10,29 +10,39 @@ namespace FileBoxWebApp.Services
 	public class FileSaveService : IFileSaveService
 	{
 		private List<FileSave> FileSaves { get; set; }
-		private IDatabaseConnector _connection;
-		public FileSaveService(IDatabaseConnector connection)
+		private readonly IDatabaseConnector _connection;
+		private readonly PathService _pathService;
+		private int _byteDataSize = 200_000;
+		public FileSaveService(IDatabaseConnector connection, PathService pathService)
 		{
 			FileSaves = new List<FileSave>();
-			Console.WriteLine("AAAA");
+
 			_connection = connection;
-			Console.WriteLine(_connection.ToString());
-			Console.WriteLine("BBBBBB");
+			_pathService = pathService;
 		}
 
 		public int StartFileSave(FileBoxFile File)
 		{
-			Console.WriteLine(1);
+			int id = 0;
+
+			FileSave? lastSave = FileSaves.OrderBy(f => f.Id).LastOrDefault();
+			if (lastSave != null && lastSave.Id < int.MaxValue)
+			{
+				id = lastSave.Id + 1;
+			}
+			else
+			{
+				id = 0;
+			}
+
 			FileSave newFile = new FileSave()
 			{
-				Id = FileSaves.Count() + 1 == int.MaxValue ? 0 : FileSaves.Count() + 1,
+				Id = id,
 				File = File.Clone()
 			};
-			Console.WriteLine(2);
 
 			FileSaves.Add(newFile);
 
-			Console.WriteLine(3);
 			return newFile.Id;
 		}
 
@@ -53,7 +63,7 @@ namespace FileBoxWebApp.Services
 			FileSaves.RemoveAll(fs => fs.Id == Id);
 		}
 
-		public void SaveFile(int Id, int PathCode, int TotalFileSize)
+		public void SaveFile(int Id, int FolderCode, int TotalFileSize)
 		{
 			//Gets current save
 			FileSave? file = FileSaves.FirstOrDefault(f => f.Id == Id);
@@ -65,9 +75,9 @@ namespace FileBoxWebApp.Services
 
 			//Checks that all the bytes are sent from the client
 			int fileByteSize = file.Data.Select(d => d.Value).Sum(bytes => bytes.Count());
-			if (TotalFileSize != fileByteSize)
+			if (TotalFileSize > fileByteSize)
 			{
-				throw new Exception("Not all data has been transfered.");
+				ThrowNotAllDataUploadedException(file, TotalFileSize);
 			}
 
 
@@ -89,27 +99,43 @@ namespace FileBoxWebApp.Services
 			file.File = addedFile.Clone();
 
 			//Checks path exists
-			Select pathSelect = new Select();
-			fileSelect.AddWhere("PathId", PathCode);
-			ServerPath? path = _connection.Select<ServerPath>(pathSelect).FirstOrDefault();
-
-			if (path == default)
-			{
-				throw new Exception("Path doesn't exist.");
-			}
+			string path = _pathService.GetPathFromFolderId(FolderCode);
 
 			//Save File at path with the name of ID
 			WriteFileToStorage(file, path);
 
 
 			//Adds FileCode & Path to tblFilePath
-			FilePath filePath = new FilePath() { FileCode = (int)addedFile.Id, PathCode = PathCode };
+			FilePath filePath = new FilePath() { FileCode = (int)addedFile.Id, PathCode = FolderCode };
 			_connection.Insert<FilePath>(filePath);
+
+			FileSaves.RemoveAll(fs => fs.Id == file.Id);
 		}
 
-		private void WriteFileToStorage(FileSave FileSave, ServerPath FilePath)
+		private void ThrowNotAllDataUploadedException(FileSave FileSave, int TotalFileSize)
 		{
-			string filePath = Path.Combine(FilePath.FilePath, $"{FileSave.File.Id}.{FileSave.File.Type}");
+			int totalPackets = TotalFileSize / _byteDataSize;
+
+			List<int> missingPackets = new List<int>();
+
+			//Increments through numbers to check what packets are missing
+			int currentIndex = 0;
+			while (currentIndex < totalPackets)
+			{
+				if (!FileSave.Data.Any(d => d.Key == currentIndex))
+				{
+					missingPackets.Add(currentIndex);
+				}
+
+				currentIndex++;
+			}
+
+			throw new NotAllDataUploadedException(missingPackets);
+		}
+
+		private void WriteFileToStorage(FileSave FileSave, string FilePath)
+		{
+			string filePath = Path.Combine(FilePath, $"{FileSave.File.Id}.{FileSave.File.Type}");
 
 			//Gets all bytes and puts them into one list
 			List<byte> byteList = new List<byte>();
@@ -121,7 +147,7 @@ namespace FileBoxWebApp.Services
 			//Saves file to storage
 			File.WriteAllBytes(filePath, byteList.ToArray());
 
-			Console.WriteLine($"File {FileSave.File.Id} (Name - {FileSave.File.Name}) written to path {FilePath.FilePath}");
+			Console.WriteLine($"File {FileSave.File.Id} (Name - {FileSave.File.Name}) written to path {FilePath}");
 
 		}
 	}

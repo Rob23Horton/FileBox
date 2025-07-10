@@ -1,0 +1,25 @@
+﻿
+.heading-container{
+	position: sticky;
+	top: 0px;
+	background-color: white;
+	display: grid;
+}
+
+.heading-container > *:first-child{
+	grid-column: 1;
+}
+
+	.heading-container > *:last-child {
+		grid-column: 2;
+
+		display: flex;
+		justify-content: right;
+	}
+
+
+.item-container {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+}

@@ -1,0 +1,37 @@
+﻿@page "/file/{sFileId}";
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+	<h1>@ErrorMessage</h1>
+}
+else
+{
+	<h1>Nothing here yet.</h1>
+}
+
+
+@code
+{
+
+	[Parameter]
+	public string sFileId
+	{
+		set
+		{
+			int fileId;
+			if (int.TryParse(value, out fileId))
+			{
+				FileId = fileId;
+			}
+		}
+		get
+		{
+			return FileId.ToString();
+		}
+	}
+
+	private int FileId { get; set; }
+
+	private string ErrorMessage { get; set; }
+
+}

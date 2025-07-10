@@ -1,21 +1,26 @@
 ﻿using FileBox.Shared.Models;
+using Microsoft.JSInterop;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace FileBoxWebApp.Client.Services
 {
 	public class DataTransferService : IDataTransferService
 	{
+		private readonly IJSRuntime _JSRuntime;
 		private readonly HttpClient _httpClient;
 		private readonly IUploadService _uploadService;
 		private bool _isRunning = false;
 		private int _maxFilesCount = 4;
 		private int _byteDataSize = 200_000;
 		private int _waitTime = 500;
-		public DataTransferService(HttpClient httpClient, IUploadService uploadService)
+		private List<KeyValuePair<int, List<byte>>> CurrentData = new List<KeyValuePair<int, List<byte>>>();
+		public DataTransferService(IJSRuntime JSRuntime, HttpClient httpClient, IUploadService uploadService)
 		{
+			_JSRuntime = JSRuntime;
 			_httpClient = httpClient;
 			_uploadService = uploadService;
 
@@ -32,6 +37,7 @@ namespace FileBoxWebApp.Client.Services
 			_isRunning = true;
 			_uploadService.AddAction(this.ToString() is not null ? this.ToString() : "DataTransferService", UpdateWaitTime);
 
+			CurrentData = new List<KeyValuePair<int, List<byte>>>();
 
 			while (_isRunning)
 			{
@@ -59,20 +65,27 @@ namespace FileBoxWebApp.Client.Services
 
 					foreach (UploadStatus file in addingFiles)
 					{
-						await StartFileUpload(file);
+						bool success = await StartFileUpload(file);
+						if (success)
+						{
+							currentFiles.Add(file);
+						}
 					}
-
-					currentFiles.AddRange(addingFiles);
 				}
 
 				//Upload data
 				foreach (UploadStatus file in currentFiles.Where(cf => !cf.IsPaused))
 				{
+					if (!CurrentData.Any(d => d.Key == file.Id))
+					{
+						continue;
+					}
+
 					await UploadStage(file);
 
-					if (file.Data.Count() == 0)
+					if (CurrentData.Single(d => d.Key == file.Id).Value.Count() <= 0)
 					{
-						FinishFileUpload(file);
+						await FinishFileUpload(file);
 					}
 				}
 
@@ -80,7 +93,7 @@ namespace FileBoxWebApp.Client.Services
 
 		}
 
-		private async Task StartFileUpload(UploadStatus File)
+		private async Task<bool> StartFileUpload(UploadStatus File)
 		{
 			//Tells server that new 
 			HttpResponseMessage response = await _httpClient.PostAsJsonAsync<UploadStart>($"api/Upload/Start", new UploadStart() { Name = File.File.Name, Created = File.File.Created, Type = File.File.Type });
@@ -88,43 +101,66 @@ namespace FileBoxWebApp.Client.Services
 
 			if (fileId is null)
 			{
-				return;
+				return false;
+			}
+
+			//Gets data and adds it to current data
+			try
+			{
+				byte[] Data = await _JSRuntime.InvokeAsync<byte[]>("binaryDb.getFileAsBytes", "FileDb", "files", $"{File.Id}");
+				CurrentData.Add(new KeyValuePair<int, List<byte>>(File.Id, Data.ToList()));
+			}
+			catch (Exception ex) //If data isn't there then cancel starting upload
+			{
+				Console.WriteLine(ex);
+				return false;
 			}
 
 			_uploadService.ChangeValue(File.Id, "Waiting", false);
-			_uploadService.ChangeId(File.Id, (int)fileId);
-			return;
+			_uploadService.SetServerId(File.Id, (int)fileId);
+			return true;
 		}
 
 		private async Task UploadStage(UploadStatus File)
 		{
+			List<byte> Data = CurrentData.Single(d => d.Key == File.Id).Value;
+
 			//Gets next data to send
-			List<byte> nextDataRange = File.Data.Count > _byteDataSize ? File.Data.GetRange(0, _byteDataSize) : File.Data;
+			List<byte> nextDataRange = Data.Count > _byteDataSize ? Data.GetRange(0, _byteDataSize) : Data;
 
 			//Uploads data to server
-			HttpResponseMessage success = await _httpClient.PostAsJsonAsync<UploadData>($"api/Upload/Upload", new UploadData() { Id = File.Id, DataIndex = File.CurrentDataIndex, Data = nextDataRange });
+			HttpResponseMessage success = await _httpClient.PostAsJsonAsync<UploadData>($"api/Upload/Upload", new UploadData() { Id = File.ServerId, DataIndex = File.CurrentDataIndex, Data = nextDataRange });
 
 			if (success is null || !success.IsSuccessStatusCode)
 			{
 				return;
 			}
 
-			//Delete data from file
-			File.Data.RemoveRange(0, nextDataRange.Count());
-
 			//Updates percentage
-			float percentage = ((float)File.Data.Count() / (float)File.TotalDataLength) * 100f;
+			float percentage = ((float)Data.Count() / (float)File.TotalDataLength) * 100f;
 			File.Percentage = (int)(100f - percentage);
 
+			//Increments data
 			_uploadService.IncrementDataIndex(File.Id);
+
+			//Updates the data to remove amount
+			Data.RemoveRange(0, nextDataRange.Count());
 		}
 
-		private async void FinishFileUpload(UploadStatus File)
+		private async Task FinishFileUpload(UploadStatus File)
 		{
+			_uploadService.ChangeValue(File.Id, "Paused", true);
+
 			//Sends message to server to save the file in the right place
-			await _httpClient.PostAsJsonAsync<UploadFinish>($"api/Upload/Finish", new UploadFinish() { Id = File.Id, PathCode = 1, TotalByteSize = File.TotalDataLength});
+			await _httpClient.PostAsJsonAsync<UploadFinish>($"api/Upload/Finish", new UploadFinish() { Id = File.ServerId, PathCode = File.FolderCode, TotalByteSize = File.TotalDataLength});
+
+			//TODO - Check if all data hasn't been sent and add the missing parts to the data needed to be sent
+
+			CurrentData.RemoveAll(d => d.Key == File.Id);
+			await _JSRuntime.InvokeVoidAsync("binaryDb.deleteFile", "FileDb", "files", $"{File.Id}");
 
 			File.Percentage = 100;
+			_uploadService.ChangeValue(File.Id, "Paused", false);
 
 			UpdateWaitTime();
 		}
@@ -135,7 +171,7 @@ namespace FileBoxWebApp.Client.Services
 			HttpResponseMessage? response = null;
 			try
 			{
-				response = await _httpClient.PostAsJsonAsync<int>($"api/Upload/Cancel", File.Id);
+				response = await _httpClient.PostAsJsonAsync<int>($"api/Upload/Cancel", File.ServerId);
 			}
 			catch
 			{
@@ -147,6 +183,14 @@ namespace FileBoxWebApp.Client.Services
 				return;
 			}
 
+
+			//Deletes CurrentData Item
+			CurrentData.RemoveAll(d => d.Key == File.Id);
+
+			//Deletes IndexedDB Item
+			await _JSRuntime.InvokeVoidAsync("binaryDb.deleteFile", "FileDb", "files", $"{File.Id}");
+
+			//Deletes UploadService Item
 			_uploadService.DeleteUploadFile(File.Id);
 		}
 

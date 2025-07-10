@@ -16,5 +16,16 @@
       <ProjectReference Include="..\..\FileBox.Shared\FileBox.Shared.csproj" />
       <ProjectReference Include="..\..\FileBox\FileBox.csproj" />
     </ItemGroup>
+	
+	<ItemGroup>
+      <Reference Include="DatabaseConnector">
+        <HintPath>..\..\DLLs\DatabaseConnector.dll</HintPath>
+		<Private>True</Private>
+      </Reference>
+    </ItemGroup>
+	
+	<ItemGroup>
+	  <Folder Include="Models\" />
+	</ItemGroup>
 
 </Project>

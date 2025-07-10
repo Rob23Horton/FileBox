@@ -1,6 +1,6 @@
 ﻿using DatabaseConnector.Attributes;
 
-namespace FileBoxWebApp.Services
+namespace FileBoxWebApp.Models
 {
 	[Table("tblFilePath")]
 	public class FilePath

@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\indexedDbInterop.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\FileBoxWebApp.Client\FileBoxWebApp.Client.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.15" />
   </ItemGroup>
@@ -22,5 +26,11 @@
 		<Private>True</Private>
       </Reference>
     </ItemGroup>
+  
+  <ItemGroup>
+    <Resource Include="wwwroot\indexedDbInterop.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
+  </ItemGroup>
 
 </Project>

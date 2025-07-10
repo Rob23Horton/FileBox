@@ -1,0 +1,142 @@
+﻿@page "/Folder/{sFolderId}";
+
+@inject IUploadService uploadService;
+
+@using FileBox.Shared.Models;
+@inject HttpClient httpClient;
+
+<PageTitle>Folder - @FolderId</PageTitle>
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+	<h1>@ErrorMessage</h1>
+}
+else
+{
+	@if (CurrentFolder is not null)
+	{
+		<div class="heading-container">
+			<h1>@CurrentFolder.FilePath</h1>
+
+			<div>
+				<label class="btn btn-primary m-1">
+					Upload
+					<InputFile OnChange="UploadClick" multiple style="display:none"></InputFile>
+				</label>
+
+				<button class="btn btn-primary m-1" @onclick="CreateClick">Create</button>
+			</div>
+		</div>
+
+
+		<div class="item-container">
+			@foreach (FolderContent content in FolderContent.Items)
+			{
+				<FolderItemDisplay Item="@content"></FolderItemDisplay>
+			}
+		</div>
+	}
+}
+
+@code
+{
+	[Parameter]
+	public string sFolderId
+	{
+		set
+		{
+			int folderId;
+			if (int.TryParse(value, out folderId))
+			{
+				FolderId = folderId;
+				LoadFolderContent();
+			}
+		}
+		get
+		{
+			return FolderId.ToString();
+		}
+	}
+
+	private int FolderId { get; set; }
+
+	private string ErrorMessage { get; set; }
+
+	private ServerFolder CurrentFolder { get; set; }
+	private ServerFolderContent FolderContent { get; set; }
+
+	private async void LoadFolderContent()
+	{
+		ServerFolder? folderInfo = null;
+
+		try
+		{
+			folderInfo = await httpClient.GetFromJsonAsync<ServerFolder>($"api/Folder/GetFolder/{FolderId}");
+		}
+		catch (Exception e)
+		{
+			ErrorMessage = $"An error occured while loading file - {e.Message}";
+			return;
+		}
+
+		if (folderInfo is null)
+		{
+			ErrorMessage = "Folder doesn't exist.";
+		}
+		else
+		{
+			ServerFolderContent? folderContent = await httpClient.GetFromJsonAsync<ServerFolderContent>($"api/Folder/GetContent/{FolderId}");
+
+			if (folderContent is null)
+			{
+				ErrorMessage = "An error occured while loading folder contents.";
+			}
+			else
+			{
+				CurrentFolder = folderInfo;
+				FolderContent = folderContent;
+			}
+		}
+
+
+		StateHasChanged();
+	}
+
+
+	private async void UploadClick(InputFileChangeEventArgs e)
+	{
+		List<IBrowserFile> files = e.GetMultipleFiles(500).ToList();
+
+		foreach (IBrowserFile file in files)
+		{
+			try
+			{
+				//Gets the file's data
+				var maxAllowedSize = file.Size + 100;
+
+				using var stream = file.OpenReadStream(maxAllowedSize);
+				using var memoryStream = new MemoryStream();
+				await stream.CopyToAsync(memoryStream);
+				byte[] fileBytes = memoryStream.ToArray();
+
+				string fileName = file.Name.Replace(Path.GetExtension(file.Name), "");
+				string fileMime = file.ContentType;
+				string extension = Path.GetExtension(file.Name).Replace(".", "");
+
+				//Adds file to upload service to be uploaded
+				uploadService.AddUploadFile(new FileBoxFile() { Name = fileName, Created = DateTime.Now, Type = extension }, FolderId, fileBytes, fileMime);
+			}
+			catch
+			{
+				Console.WriteLine($"Error when trying to add file {file.Name}");
+			}
+		}
+
+		
+	}
+
+	private void CreateClick()
+	{
+		
+	}
+}
