@@ -19,9 +19,11 @@ builder.Services.AddSingleton<IDatabaseConnector, DatabaseConnector.Services.Dat
 builder.Services.AddSingleton<PathService>();
 builder.Services.AddSingleton<IFileSaveService, FileSaveService>();
 builder.Services.AddSingleton<FolderService>();
+builder.Services.AddSingleton<FileService>();
 
 //Adds services that is used by client
 builder.Services.AddScoped<HttpClient>();
+builder.Services.AddSingleton<PerpetualSettingService>();
 builder.Services.AddScoped<IUploadService, UploadService>();
 builder.Services.AddScoped<IDataTransferService, DataTransferService>();
 

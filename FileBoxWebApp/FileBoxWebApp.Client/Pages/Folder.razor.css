@@ -17,6 +17,28 @@
 		justify-content: right;
 	}
 
+.view-toggle-container{
+	justify-self: right;
+}
+
+.view-toggle-container:hover{
+	cursor: pointer;
+}
+
+.view-toggle-container:first-child{
+	width: 48px;
+	height: 48px;
+}
+
+.column-container {
+	font-size: larger;
+	font-style: oblique;
+}
+
+.column-container > label{
+	cursor: pointer;
+}
+
 
 .item-container {
 	display: flex;

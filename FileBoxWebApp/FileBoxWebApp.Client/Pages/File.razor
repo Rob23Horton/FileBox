@@ -1,12 +1,16 @@
 ﻿@page "/file/{sFileId}";
 
+@inject HttpClient httpClient;
+
 @if (!string.IsNullOrWhiteSpace(ErrorMessage))
 {
 	<h1>@ErrorMessage</h1>
 }
-else
+else if (CurrentFile != null)
 {
-	<h1>Nothing here yet.</h1>
+	<div style="margin=bottom: 25px;">
+		<FileViewer File="@CurrentFile.Clone()"></FileViewer>
+	</div>
 }
 
 
@@ -22,6 +26,7 @@ else
 			if (int.TryParse(value, out fileId))
 			{
 				FileId = fileId;
+				LoadFile();
 			}
 		}
 		get
@@ -32,6 +37,26 @@ else
 
 	private int FileId { get; set; }
 
+	private FileLoad? CurrentFile { get; set; }
+
 	private string ErrorMessage { get; set; }
 
+
+	private async Task LoadFile()
+	{
+		try
+		{
+			ErrorMessage = "Loading";
+
+			CurrentFile = await httpClient.GetFromJsonAsync<FileLoad>($"api/File/Get/{FileId}");
+
+			ErrorMessage = "";
+
+			StateHasChanged();
+		}
+		catch
+		{
+			ErrorMessage = "An error occured while loading file";	
+		}
+	}
 }

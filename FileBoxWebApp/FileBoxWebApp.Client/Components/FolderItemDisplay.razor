@@ -1,7 +1,7 @@
 ﻿
 
 <a href="@(Item.Type.ToLower() == "folder"? "folder" : "file")/@Item.Id" class="item-link">
-    <div style="display:flex;flex-direction:column;align-items:center">
+    <div class="image-container">
         @switch (Item.Type.ToLower())
         {
             case "folder":
@@ -90,17 +90,64 @@
                 break;
         }
 
-        <label>@Item.Name</label>
+        <label class="name-label">@Item.Name</label>
+        @if (!IsGridView && Item.Type != "folder")
+        {
+            <label class="added-label">@Item.Added</label>
+            <label class="size-label">@Item.Size</label>
+            <label class="type-label">@Item.Type.ToLower()</label>
+        }
     </div>
 </a>
+
+
+@if (!IsGridView)
+{
+    <style>
+        .item-link{
+            max-width: 100% !important;
+            width: 90% !important;
+            margin: 0px !important;
+            margin-left: 30px !important;
+        }
+
+        .image-container{
+            flex-direction: row !important;
+        }
+
+        .image-container > svg{
+            margin: 10px;
+        }
+
+        .name-label{
+            width: 40%;
+        }
+
+        .added-label{
+            width: 20%;
+        }
+
+        .size-label{
+            width: 20%;
+        }
+
+        .type-label{
+            width: auto;
+        }
+    </style>
+}
 
 
 @code
 {
 
     [Parameter]
+    [EditorRequired]
     public FolderContent Item { get; set; }
 
-    private int Size { get; set; } = 64;
+    [Parameter]
+    public bool IsGridView { get; set; }
 
+    [Parameter]
+    public int Size { get; set; } = 64;
 }

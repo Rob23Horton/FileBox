@@ -45,8 +45,8 @@ namespace FileBoxWebApp.Services
 			fileSelect.AddWhere("tblFilePath", "PathCode", FolderId);
 			List<FileWithPath> childrenFiles = _databaseConnector.Select<FileWithPath>(fileSelect);
 
-			childrenFolders.ForEach(f => content.Items.Add(new FolderContent() { Id = f.Id, Name = f.FilePath, Type = "folder" }));
-			childrenFiles.ForEach(f => content.Items.Add(new FolderContent() { Id = (int)f.Id, Name = f.Name, Type = f.Type }));
+			childrenFolders.OrderBy(f => f.FilePath).ToList().ForEach(f => content.Items.Add(new FolderContent() { Id = f.Id, Name = f.FilePath, Type = "folder", Added = null, Size = "(Maybe tell total size for folder)" }));
+			childrenFiles.OrderBy(f => f.Name).ToList().ForEach(f => content.Items.Add(new FolderContent() { Id = (int)f.Id, Name = f.Name, Type = f.Type, Added = f.Created, Size = "TODO" }));
 
 			return content;
 		}
