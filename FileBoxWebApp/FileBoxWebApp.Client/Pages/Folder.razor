@@ -1,0 +1,315 @@
+﻿@page "/Folder/{sFolderId}";
+
+@inject IUploadService uploadService;
+@inject PerpetualSettingService settingService;
+@inject HttpClient httpClient;
+
+@using System.Reflection;
+@using FileBox.Shared.Models;
+
+
+<PageTitle>Folder - @FolderId</PageTitle>
+
+@if (!string.IsNullOrWhiteSpace(ErrorMessage))
+{
+	<h1>@ErrorMessage</h1>
+}
+else
+{
+	@if (CurrentFolder is not null)
+	{
+		<div class="heading-container">
+			<h1>@CurrentFolder.FilePath</h1>
+
+			<div>
+				<label class="btn btn-primary m-1">
+					Upload
+					<InputFile OnChange="UploadClick" multiple style="display:none"></InputFile>
+				</label>
+
+				<button class="btn btn-primary m-1" @onclick="CreateClick">Create</button>
+			</div>
+		</div>
+
+		<div>
+
+			<div class="view-toggle-container" @onclick="ToggleViewType">
+				@if (IsGrid)
+				{
+					<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-list-task" viewBox="0 0 16 16">
+						<path fill-rule="evenodd" d="M2 2.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5V3a.5.5 0 0 0-.5-.5zM3 3H2v1h1z" />
+						<path d="M5 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M5.5 7a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1zm0 4a.5.5 0 0 0 0 1h9a.5.5 0 0 0 0-1z" />
+						<path fill-rule="evenodd" d="M1.5 7a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H2a.5.5 0 0 1-.5-.5zM2 7h1v1H2zm0 3.5a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5h1a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5zm1 .5H2v1h1z" />
+					</svg>
+				}
+				else
+				{
+					<svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="bi bi-grid-3x2-gap" viewBox="0 0 16 16">
+						<path d="M4 4v2H2V4zm1 7V9a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1m0-5V4a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1m5 5V9a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1m0-5V4a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1M9 4v2H7V4zm5 0h-2v2h2zM4 9v2H2V9zm5 0v2H7V9zm5 0v2h-2V9zm-3-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1zm1 4a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1z" />
+					</svg>
+				}
+			</div>
+
+		</div>
+
+		<div class="item-container">
+
+			@if (!IsGrid)
+			{
+				<div class="column-container">
+					<label style="width: 36%;margin-left: 70px;" @onclick="@(() => ChangeOrderByValue("Name"))">
+						Name
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down @(OrderByDict["Name"] == null ? "hidden" : OrderByDict["Name"] == true ? "" : "rotate")" viewBox="0 0 16 16">
+							<path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659" />
+						</svg>
+					</label>
+					<label style="width: 17%;" @onclick="@(() => ChangeOrderByValue("Added"))">
+						Data Added
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down @(OrderByDict["Added"] == null ? "hidden" : OrderByDict["Added"] == true ? "" : "rotate")" viewBox="0 0 16 16">
+							<path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659" />
+						</svg>
+					</label>
+					<label style="width: 18%;" @onclick="@(() => ChangeOrderByValue("Size"))">
+						Size (MB)
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down @(OrderByDict["Size"] == null ? "hidden" : OrderByDict["Size"] == true ? "" : "rotate")" viewBox="0 0 16 16">
+							<path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659" />
+						</svg>
+					</label>
+					<label @onclick="@(() => ChangeOrderByValue("Type"))">
+						File Type
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-caret-down @(OrderByDict["Type"] == null ? "hidden" : OrderByDict["Type"] == true ? "" : "rotate")" viewBox="0 0 16 16">
+							<path d="M3.204 5h9.592L8 10.481zm-.753.659 4.796 5.48a1 1 0 0 0 1.506 0l4.796-5.48c.566-.647.106-1.659-.753-1.659H3.204a1 1 0 0 0-.753 1.659" />
+						</svg>
+					</label>
+				</div>
+			}
+
+			@foreach (FolderContent content in GetContentInOrder())
+			{
+				<FolderItemDisplay Item="@content" IsGridView="@IsGrid" Size="@( IsGrid ? 64 : 24)"></FolderItemDisplay>
+			}
+		</div>
+	}
+}
+
+@if (!IsGrid)
+{
+	<style>
+		.item-container{
+			flex-direction: column !important;
+			flex-wrap: nowrap !important;
+		}
+	</style>
+}
+
+@code
+{
+	[Parameter]
+	public string sFolderId
+	{
+		set
+		{
+			int folderId;
+			if (int.TryParse(value, out folderId))
+			{
+				FolderId = folderId;
+				LoadFolderContent();
+			}
+		}
+		get
+		{
+			return FolderId.ToString();
+		}
+	}
+
+	private int FolderId { get; set; }
+
+	private string ErrorMessage { get; set; }
+
+	private bool IsGrid { get; set; } = true;
+	private Dictionary<string, bool?> OrderByDict { get; set; }
+
+	private ServerFolder CurrentFolder { get; set; }
+	private ServerFolderContent FolderContent { get; set; }
+
+	protected override void OnInitialized()
+	{
+		try
+		{
+			Dictionary<string, bool?>? orderBy = (Dictionary<string, bool?>?)settingService.GetSettingValue("FileOrderBy");
+			if (orderBy is null)
+			{
+				//Creates default case for OrderByDict (Order by name)
+				OrderByDict = new Dictionary<string, bool?>()
+				{
+					{"Name", null },
+					{"Added", null },
+					{"Size", null },
+					{"Type", null }
+				};
+			}
+			else
+			{
+				OrderByDict = (Dictionary<string, bool?>)orderBy;
+			}
+
+
+			bool? UseGridView = (bool?)settingService.GetSettingValue("IsViewTypeGrid");
+			if (UseGridView is null)
+			{
+				settingService.SetSettingValue("IsViewTypeGrid", true);
+				IsGrid = true;
+			}
+			else
+			{
+				IsGrid = (bool)UseGridView;
+			}
+		}
+		catch
+		{
+
+		}
+
+		base.OnInitialized();
+	}
+
+	private async void LoadFolderContent()
+	{
+		ServerFolder? folderInfo = null;
+
+		try
+		{
+			folderInfo = await httpClient.GetFromJsonAsync<ServerFolder>($"api/Folder/GetFolder/{FolderId}");
+		}
+		catch (Exception e)
+		{
+			ErrorMessage = $"An error occured while loading file - {e.Message}";
+			return;
+		}
+
+		if (folderInfo is null)
+		{
+			ErrorMessage = "Folder doesn't exist.";
+		}
+		else
+		{
+			ServerFolderContent? folderContent = await httpClient.GetFromJsonAsync<ServerFolderContent>($"api/Folder/GetContent/{FolderId}");
+
+			if (folderContent is null)
+			{
+				ErrorMessage = "An error occured while loading folder contents.";
+			}
+			else
+			{
+				CurrentFolder = folderInfo;
+				FolderContent = folderContent;
+			}
+		}
+
+
+		StateHasChanged();
+	}
+
+
+	private async void UploadClick(InputFileChangeEventArgs e)
+	{
+		List<IBrowserFile> files = e.GetMultipleFiles(500).ToList();
+
+		foreach (IBrowserFile file in files)
+		{
+			try
+			{
+				//Gets the file's data
+				var maxAllowedSize = file.Size + 100;
+
+				using var stream = file.OpenReadStream(maxAllowedSize);
+				using var memoryStream = new MemoryStream();
+				await stream.CopyToAsync(memoryStream);
+				byte[] fileBytes = memoryStream.ToArray();
+
+				string fileName = file.Name.Replace(Path.GetExtension(file.Name), "");
+				string fileMime = file.ContentType;
+				string extension = Path.GetExtension(file.Name).Replace(".", "");
+
+				//Adds file to upload service to be uploaded
+				uploadService.AddUploadFile(new FileBoxFile() { Name = fileName, Created = DateTime.Now, Type = extension }, FolderId, fileBytes, fileMime);
+			}
+			catch
+			{
+				Console.WriteLine($"Error when trying to add file {file.Name}");
+			}
+		}
+
+
+	}
+
+	private void CreateClick()
+	{
+
+	}
+
+	private void ToggleViewType()
+	{
+		IsGrid = !IsGrid;
+		settingService.SetSettingValue("IsViewTypeGrid", IsGrid);
+
+		StateHasChanged();
+	}
+
+	private void ChangeOrderByValue(string property)
+	{
+
+		if (OrderByDict.ContainsKey(property))
+		{
+			bool? value = null;
+			OrderByDict.TryGetValue(property, out value);
+
+			switch (value)
+			{
+				case null:
+					value = true;
+					break;
+
+				case true:
+					value = false;
+					break;
+
+				default:
+					value = null;
+					break;
+			}
+
+			OrderByDict[property] = value;
+
+			settingService.SetSettingValue("FileOrderBy", OrderByDict);
+		}
+	}
+
+	private List<FolderContent> GetContentInOrder()
+	{
+		List<FolderContent> content = FolderContent.Items;
+
+		foreach (KeyValuePair<string, bool?> item in OrderByDict)
+		{
+
+			if (item.Value is null)
+			{
+				continue;
+			}
+
+			PropertyInfo orderByProperty = typeof(FolderContent).GetProperty(item.Key);
+
+			if ((bool)item.Value)
+			{
+				content = content.OrderBy(fc => orderByProperty.GetValue(fc)).ToList();
+			}
+			else
+			{
+				content = content.OrderByDescending(fc => orderByProperty.GetValue(fc)).ToList();
+			}
+
+		}
+
+		return content;
+	}
+}

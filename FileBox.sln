@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileBox.Shared", "FileBox.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileBoxApp", "FileBoxApp\FileBoxApp.csproj", "{877813A0-A06D-4D86-A689-8C835ED77FDE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileBoxWebApp", "FileBoxWebApp\FileBoxWebApp\FileBoxWebApp.csproj", "{8EFAD2E1-1724-4C88-A145-B400ACA3F10C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileBoxWebApp.Client", "FileBoxWebApp\FileBoxWebApp.Client\FileBoxWebApp.Client.csproj", "{CFADC994-F650-4942-A921-2FA538898113}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,6 +33,14 @@ Global
 		{877813A0-A06D-4D86-A689-8C835ED77FDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{877813A0-A06D-4D86-A689-8C835ED77FDE}.Release|Any CPU.Build.0 = Release|Any CPU
 		{877813A0-A06D-4D86-A689-8C835ED77FDE}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{8EFAD2E1-1724-4C88-A145-B400ACA3F10C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EFAD2E1-1724-4C88-A145-B400ACA3F10C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EFAD2E1-1724-4C88-A145-B400ACA3F10C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EFAD2E1-1724-4C88-A145-B400ACA3F10C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFADC994-F650-4942-A921-2FA538898113}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFADC994-F650-4942-A921-2FA538898113}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFADC994-F650-4942-A921-2FA538898113}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFADC994-F650-4942-A921-2FA538898113}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

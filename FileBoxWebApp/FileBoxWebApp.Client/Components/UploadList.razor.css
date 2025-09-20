@@ -1,0 +1,42 @@
+﻿
+
+.upload-list-container{
+	position: absolute;
+	right: 50px;
+	bottom: -5px;
+
+	min-width: 200px;
+	width: 30vw;
+
+	/*min-height: 50px;
+	height: 10vh;*/
+}
+
+.expand-btn{
+	padding: 5px;
+}
+
+.list-container {
+	display: none;
+	overflow-y: auto;
+}
+
+.list-container-expanded {
+	display: flex;
+	height: 50vh !important;
+}
+
+.list-table {
+	height: min-content;
+	border-collapse: separate;
+	border-spacing: 0 8px; /* horizontal | vertical */
+}
+
+.list-table > tr {
+	height: 2.5em !important;
+}
+
+.file-upload-row > .file-name{
+	width: 80%;
+	padding-left: 10px;
+}
