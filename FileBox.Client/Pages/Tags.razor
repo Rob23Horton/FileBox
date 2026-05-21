@@ -1,0 +1,30 @@
+﻿@page "/tags";
+
+@implements IDisposable;
+
+@inject FolderService folderService;
+@inject TagService tagService;
+
+<h3>Tags</h3>
+
+<div>
+    @foreach (var tag in tagService.GetRootTags())
+    {
+        <div style="border-color:@(tag.Colour)" class="parent-tag">
+            <h3>@tag.Name</h3>
+            <div class="child-tag-container">
+                @foreach (var childTag in tagService.GetChildTags(tag.Id))
+                {
+                    <div class="card card-@(childTag.Id)">@childTag.Name</div>
+                    <hr style="margin: 3px 0px;" />
+
+                    <style>
+                        @($@".card-{childTag.Id}::before{{
+                            background-color: {childTag.Colour};
+                        }}")
+                    </style>
+                }
+            </div>
+        </div>
+    }
+</div>

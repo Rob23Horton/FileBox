@@ -1,0 +1,59 @@
+﻿@implements IDisposable;
+
+@inject FolderService folderService;
+@inject FileService fileService;
+
+<li class="folder">
+    <details open>
+        <summary class="@(_isCurrentFolder ? "active" : "")">
+            <div class="folder-icon"></div>
+            <a href="/folder/@Folder.Id" @onclick="@(() => folderService.SelectFolder(Folder.Id))">@Folder.Name</a>
+        </summary>
+        <ul>
+            @foreach (Shared.Models.Folder folder in folderService.GetChildFolders(Folder.Id))
+            {
+                <FolderStructureFolder Folder="@folder"></FolderStructureFolder>
+            }
+            @foreach (Models.FolderItem file in fileService.GetFolderItems(Folder.Id))
+            {
+                <FolderStructureFile FolderItem="file"></FolderStructureFile>
+            }
+        </ul>
+    </details>
+</li>
+
+
+@code
+{
+    [Parameter, EditorRequired]
+    public Shared.Models.Folder Folder { get; set; }
+
+    private bool _isCurrentFolder = false;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            folderService.CurrentFolderChanged += SelectedFolderChanged;
+            folderService.FolderStructureChanged += StateHasChanged;
+
+            fileService.FileStructureChanged += StateHasChanged;
+        }
+
+        base.OnAfterRender(firstRender);
+    }
+
+    private void SelectedFolderChanged(Shared.Models.Folder CurrentFolder)
+    {
+        _isCurrentFolder = Folder.Id == CurrentFolder.Id;
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        folderService.CurrentFolderChanged -= SelectedFolderChanged;
+        folderService.FolderStructureChanged -= StateHasChanged;
+
+        fileService.FileStructureChanged -= StateHasChanged;
+    }
+}

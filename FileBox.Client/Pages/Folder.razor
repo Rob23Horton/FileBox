@@ -1,0 +1,52 @@
+﻿@page "/folder/{FolderId}";
+
+@implements IDisposable;
+@inject FolderService folderService;
+@inject FileService fileService;
+
+@if (folder is null)
+{
+    <PageTitle>Folder - Loading</PageTitle>
+
+    <img style="align-self:center;justify-self:center;height:50%;width:50%;display:flex;" src="./resources/loading.gif" />
+}
+else
+{
+    <PageTitle>Folder - @folder.Name</PageTitle>
+
+    <div class="folder-header">
+        <a href="/">/</a>
+        <p> > </p>
+        @if (folder.ParentFolderCode is not null && folderService.GetFolder(folder.ParentFolderCode ?? 0).Result is Shared.Models.Folder parentFolder)
+        {
+            @if (parentFolder.ParentFolderCode is not null)
+            {
+                <div class="popup-wrapper">
+                    <p style="cursor: pointer;" @onclick="PopupFolderClicked">...</p>
+
+                    <div class="popup @(popupFolder ? "open" : "")">
+                        <ul class="popup-list">
+                            @foreach (Models.FolderItem folderItem in folderService.GetParentFolders(folder.Id).Result)
+                            {
+                                <li>
+                                    <a href="/folder/@folderItem.Id">@folderItem.Name</a>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <p> > </p>
+            }
+            <a href="/folder/@parentFolder.Id">@parentFolder.Name</a>
+            <p> > </p>
+        }
+        <p>@folder.Name</p>
+    </div>
+
+    <div class="folder-items-container">
+        @foreach (Models.FolderItem folderItem in (List<Models.FolderItem>)[..folderService.GetFolderItems(folder.Id), ..fileService.GetFolderItems(folder.Id)])
+        {
+            <FolderItem Item="@folderItem"></FolderItem>
+        }
+    </div>
+}

@@ -1,0 +1,31 @@
+﻿@inject FolderService folderService;
+@inject NavigationManager navigationManager;
+
+<div class="folder-item-container">
+    <a href="@ItemLocation">
+        <img src="./api/utilities/icon/@Item.Type" />
+        <p>@Item.Name</p>
+    </a>
+</div>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public Models.FolderItem Item { get; set; }
+
+    private string ItemLocation
+    {
+        get
+        {
+            switch (Item.Type)
+            {
+                case ItemType.Folder:
+                    return $"/folder/{Item.Id}";
+
+                default:
+                    return $"/file/{Item.Id}";
+            }
+        }
+
+    }
+}

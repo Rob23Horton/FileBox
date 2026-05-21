@@ -1,0 +1,12 @@
+﻿@page "/"
+
+@inject FolderService folderService;
+
+<PageTitle>Home</PageTitle>
+
+<div class="folder-items-container">
+    @foreach (Shared.Models.Folder folder in folderService.GetRootFolders())
+    {
+        <FolderItem Item="@ConvertFolderToItem(folder)"></FolderItem>
+    }
+</div>

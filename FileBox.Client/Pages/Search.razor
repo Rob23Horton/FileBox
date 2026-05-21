@@ -1,0 +1,59 @@
+﻿@page "/search";
+@page "/search/{SearchText}";
+
+@implements IDisposable;
+@inject FolderService folderService;
+@inject FileService fileService;
+
+@if (String.IsNullOrEmpty(SearchText))
+{
+    <PageTitle>Search</PageTitle>
+}
+else
+{
+    <PageTitle>Search - @SearchText</PageTitle>
+}
+
+<h3>Search</h3>
+
+<div>
+
+    <div class="search-container">
+        <div class="search-box-container">
+            <InputText class="form-control" @bind-Value="@SearchText" @bind-Value:after="GoSearch"></InputText>
+            <button type="button" class="btn btn-success" @onclick="GoSearch">Search</button>
+        </div>
+    </div>
+
+    <div class="search-result-container">
+        @if (_state == SearchState.Waiting)
+        {
+            @* Blank as they haven't searched anything *@
+        }
+        else if (_state == SearchState.Searching)
+        {
+            <img style="align-self:center;justify-self:center;height:50%;width:50%;display:flex;" src="./resources/loading.gif" />
+        }
+        else if (_state == SearchState.Completed)
+        {
+            <h3>Results</h3>
+            @if (_results.Count() == 0)
+            {
+                <label>No results...</label>
+            }
+            else
+            {
+                <div class="folder-items-container">
+                    @foreach (Models.FolderItem folderItem in _results)
+                    {
+                        <FolderItem Item="@folderItem"></FolderItem>
+                    }
+                </div>
+            }
+        }
+        else if (_state == SearchState.Failed)
+        {
+            <label>Search Failed</label> @* TODO - Error message *@
+        }
+    </div>
+</div>

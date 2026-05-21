@@ -1,0 +1,24 @@
+﻿@inject IJSRuntime JS;
+
+<h3>PdfBlock</h3>
+
+@if (JS.InvokeAsync<bool>("isIOS").Result)
+{
+    <a href="/api/filedata/pdf/@FileId" target="_blank">Open PDF</a>
+}
+else
+{
+    <embed src="/api/filedata/pdf/@FileId" type="application/pdf" width="100%" height="100%" />
+}
+
+
+@* Used to detect if iframe should show or if it should popout to new page *@
+<script>
+    window.isIOS = () =>
+    /iPad|iPhone|iPod/.test(navigator.userAgent);
+</script>
+
+@code {
+    [Parameter, EditorRequired]
+    public int FileId { get; set; }
+}

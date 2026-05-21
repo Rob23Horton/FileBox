@@ -1,0 +1,13 @@
+﻿@inject FileService fileService;
+
+<li class="file">
+    <div class="file-icon" style="background-image: url('./api/utilities/icon/@FolderItem.Type')"></div>
+    <a href="/file/@FolderItem.Id" @onclick="@(() => fileService.SelectFile(FolderItem.Id))">@FolderItem.Name</a>
+</li>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public Models.FolderItem FolderItem { get; set; }
+
+}

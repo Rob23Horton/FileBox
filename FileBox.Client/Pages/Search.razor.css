@@ -1,0 +1,13 @@
+﻿
+
+
+.search-result-container
+{
+	margin-top: 30px;
+}
+
+.search-box-container {
+	display: flex;
+	gap: 10px;
+}
+

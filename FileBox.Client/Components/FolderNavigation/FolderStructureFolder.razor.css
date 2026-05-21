@@ -1,0 +1,68 @@
+﻿
+.active {
+	background-color: lightgrey;
+	border-radius: 5px;
+}
+
+details > summary {
+	display: flex;
+	align-items: center;
+	gap: 6px; /* space between chevron, folder, text */
+	cursor: pointer;
+	list-style: none;
+	padding: 2px 0;
+}
+
+details > summary{
+	display: flex;
+	flex-direction: row;
+}
+
+/* Remove default marker */
+details > summary::-webkit-details-marker {
+	display: none;
+}
+
+details > summary::before {
+	content: "";
+	width: 12px;
+	height: 12px;
+	flex-shrink: 0;
+	background-image: url("./resources/chevron-right.png");
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+/* Chevron open */
+details[open] > summary::before {
+	background-image: url("./resources/chevron-down.png");
+}
+
+details > summary > a {
+	width: -webkit-fill-available;
+	color: black;
+	text-decoration: none;
+	margin: 0px !important;
+	cursor: pointer;
+}
+
+/* Folder icon (second) */
+.folder-icon {
+	content: "";
+	cursor: auto;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	background-image: var(--icon-folder);
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+
+ul {
+	list-style: none;
+	margin: 0;
+	padding-left: 18px;
+}

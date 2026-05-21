@@ -1,0 +1,28 @@
+﻿@implements IDisposable;
+
+@inject FolderService folderService;
+
+<div class="nav-scrollable">
+        <div class="tree">
+            <ul>
+                @foreach (Shared.Models.Folder folder in folderService.GetRootFolders())
+                {
+                    <FolderStructureFolder Folder="@folder"></FolderStructureFolder> 
+                }
+            </ul>
+        </div>
+</div>
+
+@code{
+    protected override Task OnInitializedAsync()
+    {
+        folderService.FolderStructureChanged += StateHasChanged;
+
+        return base.OnInitializedAsync();
+    }
+
+    public void Dispose()
+    {
+        folderService.FolderStructureChanged -= StateHasChanged;
+    }
+}

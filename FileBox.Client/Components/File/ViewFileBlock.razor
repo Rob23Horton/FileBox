@@ -1,0 +1,51 @@
+﻿
+<div class="file-container">
+    @if (FileType == ItemType.File)
+    {
+        <p>File</p>
+    }
+    else if (FileType == ItemType.Image)
+    {
+        <ImageBlock FileId="@FileId"></ImageBlock>
+    }
+    else if (FileType == ItemType.RawImage)
+    {
+        <RawImageBlock FileId="@FileId"></RawImageBlock>
+    }
+    else if (FileType == ItemType.Document)
+    {
+        <DocumentBlock FileId="@FileId"></DocumentBlock>
+    }
+    else if (FileType == ItemType.Powerpoint)
+    {
+        <p>Powerpoint</p>
+    }
+    else if (FileType == ItemType.PDF)
+    {
+        <PdfBlock FileId="@FileId"></PdfBlock>
+    }
+    else
+    {
+        <h3>File isn't a valid type.</h3>
+    }
+</div>
+
+<style>
+
+    .file-container > * {
+    }
+
+
+    .zoom-150 {
+        transform: scale(1.5);
+    }
+</style>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public int FileId { get; set; }
+
+    [Parameter, EditorRequired]
+    public ItemType FileType { get; set; }
+}

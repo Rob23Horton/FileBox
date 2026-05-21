@@ -1,0 +1,19 @@
+﻿
+.nav-scrollable {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding-top: 20px;
+}
+
+/* Tree base */
+.tree {
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+    .tree ul {
+        list-style: none;
+        margin: 0;
+        padding-left: 0px;
+    }

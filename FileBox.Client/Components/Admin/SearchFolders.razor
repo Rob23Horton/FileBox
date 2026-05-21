@@ -1,0 +1,15 @@
+﻿
+@inject FolderService folderService;
+
+<h3>Search Folders</h3>
+
+
+<div>
+    @foreach (var searchFolder in _folders)
+    {
+    
+        <div>
+            <h4>@searchFolder.Name</h4>
+        </div>
+    }
+</div>

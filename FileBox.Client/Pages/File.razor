@@ -1,0 +1,18 @@
+﻿@page "/file/{FileId}"
+
+@implements IDisposable
+@inject FileService fileService;
+@inject FolderService folderService;
+
+@if (file is null)
+{
+    <PageTitle>File - Loading</PageTitle>
+
+    <img style="align-self:center;justify-self:center;height:50%;width:50%;display:flex;" src="./resources/loading.gif" />
+}
+else
+{
+    <PageTitle>File - @file.Name</PageTitle>
+
+    <ViewFileBlock FileId="@file.Id" FileType="@file.Type"></ViewFileBlock>
+}

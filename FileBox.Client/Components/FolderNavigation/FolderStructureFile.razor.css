@@ -1,0 +1,28 @@
+﻿
+
+
+.file {
+	margin: 6px 0;
+	position: relative;
+
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+}
+
+.file > div{
+	content: "";
+	cursor: auto;
+	width: 16px;
+	height: 16px;
+	flex-shrink: 0;
+	background-image: var(--icon-folder);
+	background-size: contain;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.file > a{
+	text-decoration: none;
+	color: black;
+}
